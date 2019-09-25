@@ -1,0 +1,148 @@
+from hir.Imports import *
+from analysis.PFG.ProcBasicBlock import ProcBasicBlock
+from hir.BreadthFirstIterator import BreadthFirstIterator
+from hir.Statement import Statement
+from analysis.BasicBlock import BasicBlock
+from utils.Stack import Stack
+
+class ControlFlowGraphException(Exception): pass
+class InvalidHIRTypeError(ControlFlowGraphException): pass
+class NotABasicBlockError(ControlFlowGraphException): pass
+
+class ControlFlowGraph(object):
+    __slots__ = ('_breakStack', '_continueStack', '_switchStack',\
+    '_scopeEntryStack', '_scopeExitStack', '_bblist','_stateStack',\
+    '_procName', '_uniq_id')
+    def __init__(self, t):
+        if not isinstance(t, Procedure):
+            raise ControlFlowGraphException, "Invalid type for ControlFlowGraph, init", type(t)
+        self._procName = t.getIdentifier()
+        self._uniq_id = 0
+        self._initStateStacks()
+        self._setBBFromProc(t)
+    def _initStateStacks(self):
+        self._breakStack = Stack("%s_breakStack" % repr(self._procName))
+        self._continueStack = Stack("%s_continueStack" % repr(self._procName))
+        self._switchStack = Stack("%s_switchStack" % repr(self._procName))
+        self._scopeEntryStack = Stack("%s_scopeEntryStack" % repr(self._procName))
+        self._scopeExitStack = Stack("%s_scopeExitStack" % repr(self._procName))
+        self._bblist = []
+        self._stateStack = [self._breakStack, self._continueStack, self._switchStack, self._scopeEntryStack, self._scopeExitStack]
+        for k in self._stateStack:
+            k.setTrackStackUpdate(True)
+    def _setBBFromProc(self, t):
+        p_BB = ProcBasicBlock(repr(self._procName))
+        self._scopeEntryStack.push(p_BB.entryBB, "to add %s" % p_BB.entryBB.getName())
+        self._scopeExitStack.push(p_BB.exitBB, "to add %s" % p_BB.exitBB.getName())
+        # Nice if we can add Entry & RETURN Annontation here?
+        self._extendBBList([p_BB.entryBB, p_BB.exitBB] )
+        self._dispatcher(t.getBody())
+    def _dispatcher(self, t):
+        self._testAndApply(t)
+    def _testAndApply(self, t):
+        if hasattr(self, '_do_' + t.__class__.__name__):
+            getattr(self, '_do_' + t.__class__.__name__)(t)
+        else:
+            print 'testAndAppy fail: <%s> not found during CFG setup' % str(type(t))
+    def _typeCheckBB(self, u):
+        if isinstance(u, list):
+            for k in u:
+                if not isinstance(k, BasicBlock):
+                    raise NotABasicBlockError, type(k)
+        elif not isinstance(u, BasicBlock):
+            raise NotABasicBlockError, type(u)
+    def _addSuccPred(self, u, v):
+        self._typeCheckBB([u,v])
+        u.addSuccessor(v)
+        v.addPredecessor(u)
+    def _push(self, aList, ntry, debugNfo=""):
+        self._typeCheckBB(ntry)
+        if hasattr(self, aList):
+            aList = getattr(self, aList)
+            aList.push(ntry, debugNfo)
+    def _pop(self, aList, debugNfo=""):
+        if hasattr(self, aList):
+            real_list = getattr(self, aList)
+            k = real_list.pop(debugNfo)
+        return k
+    def _peek(self, aList):
+        if hasattr(self, aList):
+            real_list = getattr(self, aList)
+            return real_list.peek()
+    def _extendBBList(self, t):
+        if isinstance(t, list):
+            self._bblist.extend(t)
+        else:
+            self._bblist.append(t)
+        print "addBB:<%s>" % t    
+    def _addBasicBlock(self, tag=None):
+        if tag:
+            k = BasicBlock("%s_%s:"%(repr(self._procName), tag))
+        else:
+            k = BasicBlock("%s_%s_%d:"%(repr(self._procName), "L", self._getNextCount()))        
+        self._bblist.append(k)
+        print "addBB:<%s>" % k
+        return k
+    def _getNextCount(self):
+        self._uniq_id += 1
+        return self._uniq_id-1        
+    def _do_ForLoop(self,t):
+        print self._singleLineString(t)
+    def _do_WhileLoop(self, t):
+        print self._singleLineString(t)
+    def _do_DoLoop(self, t):
+        print self._singleLineString(t)
+    def _do_SwitchStatement(self, t):
+        print self._singleLineString(t)
+    def _do_ReturnStatement(self, t):
+        print self._singleLineString(t)
+    def _do_IfStatement(self, t):
+        uniq_num = self._getNextCount()
+        ifentry, ifthen, ifexit = (BasicBlock("%s_%s_%d:"%(repr(self._procName), label, uniq_num)) \
+        for label in ["IFENTRY", "IFTHEN", "IFEXIT"])
+        self._extendBBList([ifentry, ifthen, ifexit])
+        pred = self._peek("_scopeEntryStack")
+        self._addSuccPred(pred, ifentry)
+        self._push("_scopeEntryStack", ifentry, "to add %s" % ifentry.getName())
+        self._push("_scopeExitStack", ifexit, "to add %s" % ifexit.getName())
+        ce = t.getControlExpression()
+        ece = ExpressionStatement(ce)
+        ece.setParent(t)
+        ifentry.addStatement(ece)      
+        ifentry = self._pop("_scopeEntryStack", "pop out _if_entry block after processing ControlExpression")
+        self._addSuccPred(ifentry, ifthen)
+        self._push("_scopeEntryStack", ifthen, "to add %s" % ifthen.getName())
+        thenStatement = t.getThenStatement()
+        self._testAndApply(thenStatement)
+        ifthen = self._pop("_scopeEntryStack", "to get _if_then block after processing ThenStatement")
+        self._addSuccPred(ifthen, ifexit)
+        if t.getElseStatement():
+            ifelse = self._addBasicBlock("IFELSE_%d:"%uniq_num)
+            self._addSuccPred(ifentry, ifelse)
+            self._push("_scopeEntryStack", ifelse, "to add %s" % ifelse.getName())
+            elseStatement = t.getElseStatement()
+            self._testAndApply(elseStatement)
+            ifelse = self._pop("_scopeEntryStack", "to get an _if_else block after processing ElseStatement")
+            self._addSuccPred(ifelse, ifexit)
+        else:
+            self._addSuccPred(ifentry, ifexit)
+        self._push("_scopeEntryStack", ifexit, "to add _if_exit")
+        self._pop("_scopeExitStack", "to get _if_exit")
+        print self._singleLineString(t)
+    def _do_ExpressionStatement(self,t):
+        print self._singleLineString(t)
+    def _do_DeclarationStatement(self,t):
+        print self._singleLineString(t)
+    def _do_ContinueStatement(self, t):
+        print self._singleLineString(t)
+    def _do_BreakStatement(self, t):
+        print self._singleLineString(t)
+    def _do_CompoundStatement(self, t):
+        for k in t.getChildren():
+            self._testAndApply(k)
+        print self._singleLineString(t)
+    def _singleLineString(self, k):
+        import re
+        str_repr = k.__class__.__name__ + ':'
+        str_repr += re.sub('\n', ' ', repr(k))
+        return str_repr
