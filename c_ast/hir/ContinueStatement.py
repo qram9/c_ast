@@ -1,5 +1,5 @@
 
-from Statement import Statement
+from hir.Statement import Statement
 class ContinueStatement(Statement):
 	"""Nothing to see here. Self-explanatory"""
 	def __repr__(self):
@@ -9,4 +9,4 @@ def ContinueTest():
 	return k
 
 if __name__ == '__main__':
-	print ContinueTest()
+	print(ContinueTest())

@@ -1,10 +1,24 @@
-from Declaration import Declaration
-from Declarator import Declarator
-from SymbolTable import SymbolTable
-from Specifier import Specifier
-from CompoundStatement import CompoundStatement
-from Identifier import Identifier
-from ParameterDeclarator import ParameterDeclarator
+from hir.Declaration import Declaration
+from hir.Declarator import Declarator
+from hir.SymbolTable import SymbolTable
+from hir.Specifier import Specifier
+from hir.CompoundStatement import CompoundStatement
+from hir.Identifier import Identifier
+from hir.ParameterDeclarator import ParameterDeclarator
+from hir.BinaryExpression import BinaryExpression
+from hir.ConditionalExpression import ConditionalExpression
+from hir.UnaryExpression import UnaryExpression
+from hir.Operator import binaryOperator, unaryOperator, assignmentOperator, conditionalOperator
+from hir.Identifier import Identifier
+from hir.ExpressionStatement import ExpressionStatement
+from hir.VariableDeclaration import VariableDeclaration
+from hir.DeclarationStatement import DeclarationStatement
+from hir.Keyword import specifiers
+from hir.VariableDeclarator import VariableDeclarator
+from hir.AssignmentExpression import AssignmentExpression
+from hir.IntegerLiteral import IntegerLiteral
+from hir.FloatLiteral import FloatLiteral
+from hir.CompoundStatement import CompoundStatement
 class ProcedureException(Exception): pass
 class LeadSpecNotASpecifierError(ProcedureException):  pass
 class BodyNotCompoundStatementError(ProcedureException): pass
@@ -17,7 +31,7 @@ class Procedure(Declaration):
     __slots__ = ['lead', 'symbolTable', 'proc_id', '_params']
     def _processDecl(self, params):
         if not isinstance(params, ParameterDeclarator):
-            raise NotAParameterDeclaratorError, type(params)
+            raise NotAParameterDeclaratorError(type(params))
         self._params = params
         for k in range(0,self._params.getNumChildren()):
             child = self._params.getChild(k)
@@ -36,14 +50,14 @@ class Procedure(Declaration):
         self.setNumChildren(1)
         self.symbolTable = SymbolTable()
         if not isinstance(body, CompoundStatement):
-            raise BodyNotCompoundStatementError, type(body)
+            raise BodyNotCompoundStatementError(type(body))
         self.setChild(0, body)
         if not isinstance(iden, Identifier):
-            raise ProcedureIDNotIdentifierError, type(iden)
+            raise ProcedureIDNotIdentifierError(type(iden))
         self.proc_id = iden
         for k in lead:
             if not isinstance(k, Specifier):
-                raise LeadSpecNotASpecifierError, type(k)
+                raise LeadSpecNotASpecifierError(type(k))
             self.lead.append(k)
         self._processDecl(params)
     def getBody(self):
@@ -89,7 +103,7 @@ function is printed"""
 
     def items(self):
         """Returns items dict to getstate, for pickle and copy,
-with the values from the __slots__, lead, symbolTable, 
+with the values from hir.he __slots__, lead, symbolTable, 
 proc_id, _params and then goes down on the class 
 hierarchy and collects the rest of the __slots__"""
         items = {}
@@ -100,27 +114,27 @@ hierarchy and collects the rest of the __slots__"""
         for k in Procedure.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in supitems.items():
+                for k,v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
     def __getstate__(self):
         """Returns the results of the self.items function call
 for pickle and copy"""
-        return self.items()
+        return dict(self.items())
 
     def __setstate__(self, statedict):
         """Blindly sets the contents of statedict to __slots__"""
-        for k,v in statedict.items():
+        for k,v in list(statedict.items()):
             setattr(self, k, v)
+from hir.ForLoop import ForLoopTest
+from hir.ParameterDeclarator import ParameterDeclaratorTest    
+from hir.Identifier import Identifier
+from hir.Keyword import specifiers
+from hir.CompoundStatement import CompoundStatement
+from hir.IfStatement import IfStatementTest
 
 def procedureTest():
-    from ForLoop import ForLoopTest
-    from ParameterDeclarator import ParameterDeclaratorTest    
-    from Identifier import Identifier
-    from keyword import specifiers
-    from CompoundStatement import CompoundStatement
-    from IfStatement import IfStatementTest
     forstmt = ForLoopTest()
     params = ParameterDeclaratorTest()#ParameterDeclarator() 
     proc_name = Identifier('my_proc')
@@ -135,6 +149,6 @@ def procedureTest():
 if __name__ == '__main__':
     p = procedureTest()
     import copy
-    print 'Procedure test, ', p
-    print 'Procedure test, copy', copy.deepcopy(p)
-    print p
+    print('Procedure test, ', p)
+    print('Procedure test, copy', copy.deepcopy(p))
+    print(p)

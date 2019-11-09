@@ -1,5 +1,5 @@
-from Expression import Expression
-from operator import unaryOperator, getUnaryOperatorList
+from hir.Expression import Expression
+from hir.Operator import unaryOperator, getUnaryOperatorList
 
 class UnaryExpressionException(Exception): pass
 class InvalidUnaryOperatorTypeError(UnaryExpressionException): pass
@@ -12,11 +12,11 @@ class UnaryExpression(Expression):
 with an unknown type for operator. Passed operator 
 must be present in the lists returned by 
 getUnaryOperatorList(). Care must be taken here 
-if you have made a copy of a operator type."""
+if you have made a copy of a Operator type."""
 		uops = getUnaryOperatorList()
 		if uop not in uops:
-			print uop, type(uop), id(uop)
-			raise InvalidUnaryOperatorTypeError, type(uop), id(uop)
+			print((uop, type(uop), id(uop)))
+			raise InvalidUnaryOperatorTypeError( type(uop), id(uop))
 	def __init__(self, *args):
 		"""UnaryExpression initialized with sequence with uop, child"""
 		Expression.__init__(self)
@@ -27,7 +27,7 @@ if you have made a copy of a operator type."""
 		self.setParens(False)
 
 	def getOperator(self):
-		"""Returns the operator __slots__ entry: _op"""
+		"""Returns the Operator __slots__ entry: _op"""
 		return self._op
 	def setOperator(self, uop):
 		"""Set an Unary Operator as the _op member 
@@ -41,15 +41,15 @@ of the UnaryExpression object"""
 #		self.setOperator(expr.getOperator())
 
 	def items(self):
-		"""Returns items dict when called from setstate. 
+		"""Returns items dict when called from hir.etstate. 
 Adds __slots__ entry "_op" to items dict.
-Recurses into base classes and collects items from there too."""
+Recurses into base classes and collects items from hir.here too."""
 		items = {}
 		items['_op'] = self._op
 		for k in UnaryExpression.__bases__:
 			if hasattr(k, 'items'):
 				supitems = k.items(self)
-				for k,v in supitems.items():
+				for k,v in list(supitems.items()):
 					items[k] = v
 		return dict(items)
 	def __getstate__(self):
@@ -57,11 +57,11 @@ Recurses into base classes and collects items from there too."""
 this Unary Expression object and its base classes 
 instances' contents. Uses the items() function.
 Contents added here is _op"""
-		return self.items()
+		return dict(self.items())
 	def __setstate__(self, statedict):
-		"""Blindly calls setattr with entried from a 
+		"""Blindly calls setattr with entried from hir. 
 __getstate__ like string->attr dict"""
-		for k,v in statedict.items():
+		for k,v in list(statedict.items()):
 			setattr(self, k, v)
 
 	def __repr__(self):
@@ -81,15 +81,15 @@ precede the expression child."""
 	__str__ = __repr__
 
 def UnaryExpressionTest():
-	from operator import unaryOperator
-	from Identifier import Identifier
+	from hir.perator import unaryOperator
+	from hir.dentifier import Identifier
 	a = Identifier('a')
 	b = UnaryExpression(unaryOperator.POST_DECREMENT, a)
 	return b
 
 if __name__ == '__main__':
-	from Identifier import Identifier
+	from hir.Identifier import Identifier
 	exp = Identifier('a')
 	unary_exp = UnaryExpression(unaryOperator.POST_DECREMENT, exp)
-	print repr(unary_exp)
+	print((repr(unary_exp)))
 

@@ -1,7 +1,7 @@
-"""An ordered dict type I pickled up from the ActiveState Python cookbook from the Net"""
+"""An ordered dict type I pickled up from hir.he ActiveState Python cookbook from the Net"""
 class odict(dict):
     def __init__(self, d={}):
-        self._keys = d.keys()
+        self._keys = list(d.keys())
         dict.__init__(self, d)
 
     def __delitem__(self, key):
@@ -10,7 +10,7 @@ class odict(dict):
 
     def __setitem__(self, key, item):
         dict.__setitem__(self, key, item)
-        # a peculiar sharp edge from copy.deepcopy
+        # a peculiar sharp edge from hir.opy.deepcopy
         # we'll have our set item called without __init__
         if not hasattr(self, '_keys'):
             self._keys = [key,]
@@ -43,8 +43,8 @@ class odict(dict):
             self._keys.append(key)
 
     def update(self, d):
-        for key in d.keys():
-            if not self.has_key(key):
+        for key in list(d.keys()):
+            if key not in self:
                 self._keys.append(key)
         dict.update(self, d)
 
@@ -66,7 +66,7 @@ class odict(dict):
         del self._keys[cur]
 
     def index(self, key):
-        if not self.has_key(key):
+        if key not in self:
             raise KeyError(key)
         return self._keys.index(key)
 

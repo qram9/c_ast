@@ -31,7 +31,7 @@ visiting."""
 			queue.append(k)
 
 if __name__ == '__main__':
-	from Procedure import procedureTest
+	from hir.Procedure import procedureTest
 	bfstest = procedureTest()
 	for k in bfsItr(bfstest):
-		print 'next: ', id(k)
+		print('next: ', id(k))

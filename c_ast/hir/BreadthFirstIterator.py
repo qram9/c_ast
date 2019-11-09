@@ -1,6 +1,6 @@
 class BreadthFirstIteratorException(Exception): pass
 class NotATraversableError(BreadthFirstIteratorException): pass
-from Traversable import Traversable
+from hir.Traversable import Traversable
 class PruneTypeError(Exception): pass
 class BreadthFirstIterator(object):
     """Provides a breadth first iterator for a given HIR 
@@ -10,13 +10,13 @@ class BreadthFirstIterator(object):
     __slots__ = ('_prune_set', '_queue')
     def __init__(self, t):
         if not isinstance(t, Traversable):
-            raise NotATraversableError, type(t)
+            raise NotATraversableError(type(t))
         self._prune_set = []
         self._queue = []
         self._queue.append(t)
     def PruneOn(self, t):
         if not issubclass(t, Traversable):
-            raise PruneTypeError, t.__name__
+            raise PruneTypeError(t.__name__)
         self._prune_set.append(t)
     def _getChildren(self, node):
         """Returns a list containing all child nodes 
@@ -28,7 +28,7 @@ iterative tree visitor functions."""
             return k
         except:
             return []
-    def next(self):
+    def __next__(self):
         """Yeilds the next object in a 
         Breadth first Iterator. First object 
         returned is the passed parameter. Following this
@@ -44,9 +44,9 @@ iterative tree visitor functions."""
             r = self._queue[0]
             if hasattr(self, '_prune_set') \
 and len(self._prune_set):
-				for k in self._prune_set:
-					if isinstance(r, k):
-						yield r
+                for k in self._prune_set:
+                    if isinstance(r, k):
+                        yield r
             else:
                 yield r
             self._queue.remove(r)
@@ -61,36 +61,37 @@ def reindent(s, numSpaces):
               for line in s.splitlines( ) ]
     return ''.join(lines)
 
+from hir.ForLoop import ForLoopTest2, bfs
+from hir.UnaryExpression import UnaryExpressionTest
+from hir.UnaryExpression import UnaryExpressionTest
+from hir.BinaryExpression import BinaryExpressionTest
+from hir.AssignmentExpression import AssignmentExpressionTest
+from hir.AssignmentExpression import AssignmentExpression
+from hir.ExpressionStatement import ExpressionStatementTest
+from hir.Expression import Expression
+from hir.Statement import Statement
+from hir.Keyword import specifiers
+from hir.Declarator import Declarator
+from hir.IfStatement import IfStatementTest
+
 if __name__ == '__main__':
-    from ForLoop import ForLoopTest2, bfs
-    from UnaryExpression import UnaryExpressionTest
-    from UnaryExpression import UnaryExpressionTest
-    from BinaryExpression import BinaryExpressionTest
-    from AssignmentExpression import AssignmentExpressionTest
-    from AssignmentExpression import AssignmentExpression
-    from ExpressionStatement import ExpressionStatementTest
-    from Expression import Expression
-    from Statement import Statement
-    from keyword import specifiers
-    from Declarator import Declarator
-    #	bfsitr = BreadthFirstIterator(bfstest)
-    #	print 'The children of: ', bfstest
-    #	print 'are'
-    #	i = 1
-    #	for k in bfsitr.next():
-    #		print '%d:'%i, reindent(str(k), i)
-    #		i += 1
-    #	bfs(bfstest)
-    #	bfstest = ForLoopTest()
-    #	bfstest = ForLoopTest2()
-    #	bfstest = ExpressionStatementTest()
-    #	dec = DeclarationStatement(VariableDeclaration(specifiers.inT, VariableDeclarator(Identifier('a'))))
-    #	as1 = AssignmentExpression(Identifier('a'), assignmentOperator.ADD, IntegerLiteral(1))
-    #	exp_stmt = ExpressionStatement(as1)
-    #	comp_stmt = CompoundStatement()
-    #	comp_stmt.addStatement(dec)
-    #	comp_stmt.addStatement(exp_stmt)
-    from IfStatement import IfStatementTest
-    from Digrapher import Digrapher
+    #    bfsitr = BreadthFirstIterator(bfstest)
+    #    print 'The children of: ', bfstest
+    #    print 'are'
+    #    i = 1
+    #    for k in bfsitr.next():
+    #        print '%d:'%i, reindent(str(k), i)
+    #        i += 1
+    #    bfs(bfstest)
+    #    bfstest = ForLoopTest()
+    #    bfstest = ForLoopTest2()
+    #    bfstest = ExpressionStatementTest()
+    #    dec = DeclarationStatement(VariableDeclaration(specifiers.inT, VariableDeclarator(Identifier('a'))))
+    #    as1 = AssignmentExpression(Identifier('a'), assignmentOperator.ADD, IntegerLiteral(1))
+    #    exp_stmt = ExpressionStatement(as1)
+    #    comp_stmt = CompoundStatement()
+    #    comp_stmt.addStatement(dec)
+    #    comp_stmt.addStatement(exp_stmt)
     ifst = IfStatementTest()
-    print Digrapher(ifst, [Expression,Statement,Declarator])
+    from hir.Digrapher import Digrapher
+    print(Digrapher(ifst, [Expression,Statement,Declarator]))

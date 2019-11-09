@@ -6,18 +6,18 @@ class NotADeclarationError(Exception):
 	def __init__(self, value=''):
 		self.value = value
 	def __str__(self):
-		print 'Invalid type: (%s) to add to symbol table', self.value
+		print(('Invalid type: (%s) to add to symbol table', self.value))
 class SymbolTableException(Exception): pass
 class SymbolNotFound(SymbolTableException): pass
 class DuplicateSymbolInsertionError(SymbolTableException): pass
 
-from odict import odict
-from Declaration import Declaration
+from hir.odict import odict
+from hir.Declaration import Declaration
 class SymbolTable(object):
 	"""Represents a symbol table type in the HIR
 Used by CompoundStatements, Procedures, TranslationUnits (files)
 to create lexical scopes in the program. A symbols declared in
-a scope is stored in an ordered dict type: odict from the Python
+a scope is stored in an ordered dict type: odict from hir.he Python
 cook book. Symbols can be added with a addDeclaration. Declarations
 must be of type Declaration. Declarations are stored by using the 
 repr(identifier), where identifier is usually of type Identifier,
@@ -40,10 +40,11 @@ these errors and process these errors."""
 		"""Adds a declaration type to symbol table. If this a duplicate,
 raises DuplicateSymbolInsertionError exception"""
 		self._catchNotADeclarationError(decl)
-		if self.symbolTable.has_key(repr(name)):
-			raise DuplicateSymbolInsertionError, \
-'Symbol Table has an entry with same representation:<%s:%s>' \
-%(repr(name), repr(self.symbolTable[repr(name)]))
+		if repr(name) in self.symbolTable:
+                    raise DuplicateSymbolInsertionError(
+                            'Symbol Table has an entry with'
+                            ' same representation:<%s:%s>'
+                            % (repr(name), repr(self.symbolTable[repr(name)])))
 		self.symbolTable[repr(name)] = decl
 	def __repr__(self):
 		return repr(self.symbolTable)
@@ -55,13 +56,13 @@ ordered dict for getstate"""
 		return dict(items)
 	def __getstate__(self):
 		"""Returns the state, i.e. __slots__.symbolTable to pickle or copy"""		
-		return self.items()
+		return dict(self.items())
 	def __setstate__(self, statedict):
 		"""Blindly sets the given statedict into a new object of this class"""
-		for k,v in statedict.items():
+		for k,v in list(statedict.items()):
 			setattr(self, k, v)
 if __name__ == '__main__':
 	sym = SymbolTable()
-	from Imports import *
+	from hir.import_all import *
 	sym.addDeclaration('p', VariableDeclaration(specifiers.int16, VariableDeclarator(Identifier('k'))))
 	sym.addDeclaration('l', VariableDeclaration(specifiers.int16, VariableDeclarator(Identifier('m'))))

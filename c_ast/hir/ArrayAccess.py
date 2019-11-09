@@ -1,4 +1,4 @@
-from Expression import Expression
+from hir.Expression import Expression
 class ArrayAccessException(Exception):
     def __init__(self, value):
         self.value = value
@@ -60,12 +60,12 @@ Change this function to return different a representation."""
         return retval
     __str__ = __repr__
 
+from hir.Identifier import Identifier
 def ArrayAccessTest():
-    from Identifier import Identifier
     a = ArrayAccess(Identifier('k'), [Identifier(k) for k in ['a', 'b','c']])
-    print a
+    print(a)
     b = ArrayAccess(Identifier('k'), Identifier('i'))
-    print b
+    print(b)
     return b
 
 if __name__ == '__main__':

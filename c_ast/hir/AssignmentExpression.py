@@ -1,19 +1,19 @@
-from BinaryExpression import BinaryExpression
-from operator import assignmentOperator
+from hir.BinaryExpression import BinaryExpression
+from hir.Operator import assignmentOperator
 class AssignmentExpression(BinaryExpression):
-	"""Assignment Expression works on any 
+    """Assignment Expression works on any 
 sequence with three args, lhs, op, rhs. 
 Except for a differentiating class type, and 
-operator from the assignment operators group, 
+operator from hir.he assignment operators group, 
 instances hold same data as BinaryExpression 
 instances."""
-	def __init__(self, *args):
-		lhs, op, rhs = args
-		BinaryExpression.__init__(self, lhs, op, rhs)
+    def __init__(self, *args):
+        lhs, op, rhs = args
+        BinaryExpression.__init__(self, lhs, op, rhs)
 
+from hir.Identifier import Identifier
 def AssignmentExpressionTest():
-	from Identifier import Identifier
-	return AssignmentExpression(Identifier('a'), assignmentOperator.ADD, Identifier('b'))
+    return AssignmentExpression(Identifier('a'), assignmentOperator.ADD, Identifier('b'))
 
 if __name__ == '__main__':
-	print AssignmentExpressionTest()
+    print(AssignmentExpressionTest())

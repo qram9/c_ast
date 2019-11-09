@@ -1,6 +1,20 @@
-from Statement import Statement
-from CompoundStatement import CompoundStatement
-from Expression import Expression
+from hir.Statement import Statement
+from hir.CompoundStatement import CompoundStatement
+from hir.Expression import Expression
+from hir.BinaryExpression import BinaryExpression
+from hir.ConditionalExpression import ConditionalExpression
+from hir.UnaryExpression import UnaryExpression
+from hir.Operator import binaryOperator, unaryOperator, assignmentOperator, conditionalOperator
+from hir.Identifier import Identifier
+from hir.ExpressionStatement import ExpressionStatement
+from hir.VariableDeclaration import VariableDeclaration
+from hir.DeclarationStatement import DeclarationStatement
+from hir.Keyword import specifiers
+from hir.VariableDeclarator import VariableDeclarator
+from hir.AssignmentExpression import AssignmentExpression
+from hir.IntegerLiteral import IntegerLiteral
+from hir.FloatLiteral import FloatLiteral
+from hir.CompoundStatement import CompoundStatement
 class NotAStatementError(Exception):
 	def __init__(self, value=''):
 		self.value = value
@@ -18,7 +32,7 @@ class IfStatement(Statement):
         ConditionalExpression control statement, true_body, false_body 
         both either CompoundStatements or Statements."""
         if not isinstance(condition, Expression):
-            raise InvalidExpressionForConditionError, type(condition)
+            raise InvalidExpressionForConditionError(type(condition))
         self.initialize()
         Statement.__init__(self)
         self.setNumChildren(3)
@@ -56,7 +70,6 @@ class IfStatement(Statement):
         except:
             pass
         return retval
-from Imports import *
 def IfStatementTest():
     import copy
     control = ConditionalExpression(Identifier('a'), conditionalOperator.COMPARE_GT, IntegerLiteral(0))
@@ -75,5 +88,5 @@ def IfStatementTest():
     ifconstruct = IfStatement(control, copy_ifbody, ifconstruct)
     return ifconstruct    
 if __name__ == '__main__':
-    print IfStatementTest()
+    print(IfStatementTest())
     

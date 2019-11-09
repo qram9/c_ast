@@ -1,6 +1,6 @@
-from Statement import Statement
-from Traversable import Traversable
-from Declarator import Declarator
+from hir.Statement import Statement
+from hir.Traversable import Traversable
+from hir.Declarator import Declarator
 class ChildNotCorrectType(Exception):
 	def __init__(self, value=''):
 		self.value = value

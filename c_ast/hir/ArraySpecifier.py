@@ -1,4 +1,4 @@
-from Specifier import Specifier
+from hir.Specifier import Specifier
 
 class ArraySpecifierException(Exception):
 	def __init__(self, value):
@@ -47,7 +47,7 @@ in the dimensions list specifier"""
 		try:
 			return self.dimensions[n]
 		except IndexError:
-			raise InvalidIndexDimensionsError, "%d %d" %(len(self.dimensions), n)
+			raise InvalidIndexDimensionsError("%d %d" %(len(self.dimensions), n))
 
 	def setDimension(self, n, val):
 		"""Sets a specified dimension to given value"""
@@ -74,15 +74,15 @@ a representation."""
 		for k in ArraySpecifier.__bases__:
 			if hasattr(k, 'items'):
 				supitems = k.items(self)
-				for k,v in supitems.items():
+				for k,v in list(supitems.items()):
 					items[k] = v
 		return dict(items)
 	def __getstate__(self):
 		"""Returns the 'dimensions' list of ints. Calls items directly"""
-		return self.items()
+		return dict(self.items())
 	def __setstate__(self, statedict):
 		"""Blindly sets the state of this object, using a statedict"""
-		for k,v in statedict.items():
+		for k,v in list(statedict.items()):
 			setattr(self, k, v)
 
 def ArraySpecifierTest():

@@ -1,6 +1,6 @@
-from Statement import Statement
-from Loop import Loop
-from Expression import Expression
+from hir.Statement import Statement
+from hir.Loop import Loop
+from hir.Expression import Expression
 
 class WhileLoop(Statement, Loop):
 	"""Ansi C while loop. Requires a ConditionalExpression,
@@ -15,10 +15,10 @@ the specified 'body' is of type CompoundStatement"""
 		self.initialize()
 		self.setNumChildren(2)
 		if not isinstance(condition, Expression):
-			raise InvalidCondtionException, type(condition)
+			raise InvalidCondtionException(type(condition))
 		self.setChild(0, condition)
 		if not isinstance(body, CompoundStatement):
-			raise InvalidBodyException, type(body)
+			raise InvalidBodyException(type(body))
 		self.setChild(1, body) 
 	def __repr__(self):
 		"""Returns a string representation of the contents 
@@ -31,7 +31,7 @@ Change this function to return different a representation."""
 		return retval
 
 if __name__ == '__main__':
-	from Imports import *
+	from hir.Imports import *
 	control = ConditionalExpression(Identifier('a'), conditionalOperator.COMPARE_EQ, Identifier('a'))
 	assignexp1 = AssignmentExpression(Identifier('a'), assignmentOperator.ADD, Identifier('b'))
 	assignStmt = ExpressionStatement(assignexp1)
@@ -41,4 +41,4 @@ if __name__ == '__main__':
 	body.addStatement(decl1)
 	body.addStatement(assignStmt)
 	whileloop = WhileLoop(control, body)
-	print whileloop
+	print(whileloop)

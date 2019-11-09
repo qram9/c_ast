@@ -17,8 +17,7 @@ class ControlFlowGraph(object):
     '_procName', '_uniq_id')
     def __init__(self, t):
         if not isinstance(t, Procedure):
-            raise ControlFlowGraphException, \
-                "Invalid type for ControlFlowGraph, init", type(t)
+            raise ControlFlowGraphException("Invalid type for ControlFlowGraph, init").with_traceback(type(t))
         self._procName = t.getIdentifier()
         self._uniq_id = 0
         self._initStateStacks()
@@ -81,16 +80,15 @@ class ControlFlowGraph(object):
         if hasattr(self, '_do_' + t.__class__.__name__):
             getattr(self, '_do_' + t.__class__.__name__)(t)
         else:
-            raise DispatchFunctionNotFoundError, \
-                'testAndApply fail: <%s> not found during CFG setup' % str(type(t))
+            raise DispatchFunctionNotFoundError('testAndApply fail: <%s> not found during CFG setup' % str(type(t)))
 
     def _catchNotABasicBlockError(self, u):
         if isinstance(u, list):
             for k in u:
                 if not isinstance(k, BasicBlock):
-                    raise NotABasicBlockError, type(k)
+                    raise NotABasicBlockError(type(k))
         elif not isinstance(u, BasicBlock):
-            raise NotABasicBlockError, type(u)
+            raise NotABasicBlockError(type(u))
 
     def _addSuccPred(self, u, v):
         self._catchNotABasicBlockError([u,v])
@@ -103,7 +101,7 @@ class ControlFlowGraph(object):
         else:
             k = BasicBlock("%s_%s_%d"%(repr(self._procName), "L", self._getNextCount()))
         self._bblist.append(k)
-        print "addBB:<%s>" % k
+        print("addBB:<%s>" % k)
         return k
 
     def _extendBBWithList(self, t):
@@ -119,20 +117,20 @@ class ControlFlowGraph(object):
             aList = getattr(self, aList)
             aList.push(ntry, debugNfo)
         else:
-            raise StackNotFoundError, "Unknown Stack Variable requested: %s" % aList
+            raise StackNotFoundError("Unknown Stack Variable requested: %s" % aList)
     def _pop(self, aList, debugNfo=""):
         if hasattr(self, aList):
             real_list = getattr(self, aList)
             k = real_list.pop(debugNfo)
             return k
         else:
-            raise StackNotFoundError, "Unknown Stack Variable requested: %s" % aList
+            raise StackNotFoundError("Unknown Stack Variable requested: %s" % aList)
     def _peek(self, aList):
         if hasattr(self, aList):
             real_list = getattr(self, aList)
             return real_list.peek()
         else:
-            raise StackNotFoundError, "Unknown Stack Variable requested: %s" % aList
+            raise StackNotFoundError("Unknown Stack Variable requested: %s" % aList)
 
     def _getNextCount(self):
         self._uniq_id += 1
@@ -161,7 +159,7 @@ class ControlFlowGraph(object):
         # do the initialization and test if init < limit
         uniq_num = self._getNextCount() 
         ie = t.getInit()
-        eie, cie = map(ExpressionStatement, (t.getInit(), t.getCondition()))
+        eie, cie = list(map(ExpressionStatement, (t.getInit(), t.getCondition())))
         eie.setParent(t)
         cie.setParent(t)
         # lose the predecessor BB
@@ -222,13 +220,13 @@ class ControlFlowGraph(object):
                 % for_exit.getName())
 
     def _do_WhileLoop(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_DoLoop(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_SwitchStatement(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_ReturnStatement(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
 
     def _process_IfThen(self, t, ifthen):
         # call _dispatcher with then block, but add then to scopeEntryStack first
@@ -302,21 +300,21 @@ class ControlFlowGraph(object):
 
     def _do_IfStatement(self, t):
         self._handleIfStatement(t)
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
 
     def _do_ExpressionStatement(self,t):
         pred_bb = self._peek("_scopeEntryStack")
         pred_bb.addStatement(t)
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
 
     def _do_DeclarationStatement(self,t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_ContinueStatement(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_BreakStatement(self, t):
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
     def _do_CompoundStatement(self, t):
         for k in t.getChildren():
             self._testAndApply(k)
-        print self._singleLineString(t)
+        print(self._singleLineString(t))
 

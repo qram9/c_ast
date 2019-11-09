@@ -1,4 +1,4 @@
-from Traversable import Traversable
+from hir.Traversable import Traversable
 
 class Declarator(Traversable):
 	"""Abstract type"""

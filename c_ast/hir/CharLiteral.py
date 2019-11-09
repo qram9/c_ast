@@ -1,4 +1,4 @@
-from Literal import Literal
+from hir.Literal import Literal
 
 class InvalidTypeCharLiteralError(Exception):
 	def __init__(self, value):
@@ -27,24 +27,24 @@ around it. self.value __slots__ entry is used for this"""
 	__str__ = __repr__
 
 	def items(self):
-		"""Returns items dict when called from setstate. 
+		"""Returns items dict when called from hir.etstate. 
 Adds __slots__ entry "value" to items dict.
-Recurses into base classes and collects items from there too."""
+Recurses into base classes and collects items from hir.here too."""
 		items = {}
 		items['value'] = self.value
 		for k in CharLiteral.__bases__:
 			if hasattr(k, 'items'):
 				supitems = k.items(self)
-				for k,v in supitems.items():
+				for k,v in list(supitems.items()):
 					items[k] = v
 		return dict(items)
 	def __getstate__(self):
 		"""Returns current state for 'pickling' or 'copy'. 
 Adds __slots__ entry "value" to items dict."""
-		return self.items()
+		return dict(self.items())
 	def __setstate__(self, statedict):
-		"""Blindly sets state from a given statedict"""
-		for k,v in statedict.items():
+		"""Blindly sets state from hir. given statedict"""
+		for k,v in list(statedict.items()):
 			setattr(self, k, v)
 
 def CharLiteralTest():
@@ -52,5 +52,5 @@ def CharLiteralTest():
 	return l
 
 if __name__ == '__main__':
-	print CharLiteralTest()
+	print(CharLiteralTest())
 

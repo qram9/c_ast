@@ -1,4 +1,4 @@
-from Traversable import Traversable
+from hir.Traversable import Traversable
 #TODO: getProcedure
 #TODO: Notmuchgoingon
 class Statement(Traversable):

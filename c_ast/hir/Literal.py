@@ -1,4 +1,4 @@
-from Expression import Expression
+from hir.Expression import Expression
 
 class Literal(Expression):
 	"""Represents a base class to store 

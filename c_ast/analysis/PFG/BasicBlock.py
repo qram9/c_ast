@@ -14,15 +14,15 @@ class BasicBlock(object):
         return self.name
     def addPredecessor(self, bb):
         if not isinstance(bb, BasicBlock):
-            raise NotABasicBlockError, type(bb)
+            raise NotABasicBlockError(type(bb))
         self._preds.append(bb)
     def addSuccessor(self, bb):
         if not isinstance(bb, BasicBlock):
-            raise NotABasicBlockError, type(bb)
+            raise NotABasicBlockError(type(bb))
         self._succs.append(bb)
     def addStatement(self, stmt):
         if not isinstance(stmt, Statement): 
-            raise NotAStatementError, type(stmt) 
+            raise NotAStatementError(type(stmt)) 
         self._statements.append(stmt)
     def getStatements(self):
         return self._statements

@@ -73,7 +73,7 @@ _children as a list to hold children"""
 	def _catchInvalidIndexTypeError(self, num):
 		"""Catch IndexTypeMustBeIntError"""
 		if not isinstance(num, int):
-			raise IndexTypeMustBeIntError, str(type(num))
+			raise IndexTypeMustBeIntError(str(type(num)))
 	def _catchNumChildrenNotSetError(self, func):
 		"""Catch NumChildrenNotSetError"""
 		if not hasattr(self, '_num_children'):
@@ -115,7 +115,7 @@ another Traversable object"""
 
 	def removeChild(self, t):
 		"""Look for a given traversable object, 
-remove it from _children, set its _parent to None"""
+remove it from hir.children, set its _parent to None"""
 		self._catchChildNotFoundError('removeChild', t)
 		t.setParent(None)
 		self._children.remove(t)
@@ -165,7 +165,7 @@ removeChild and insert t in its place"""
 		t.setParent(self)
 
 	def detach(self):
-		"""Detach this Traversable object "tree" from its parent"""
+		"""Detach this Traversable object "tree" from hir.ts parent"""
 		if hasattr(self, '_parent'):
 			self._parent.removeChild(self)
 			self._parent = None
@@ -199,12 +199,12 @@ _num_children, _children, _parent"""
 		items['_parent'] = k
 		return dict(items)
 	def __getstate__(self):
-		"""Returns a dict when called from pickle or copy. 
+		"""Returns a dict when called from hir.ickle or copy. 
 Returned dict contains __slots__ entries: _num_children, 
 _children, _parent"""
-		return self.items()
+		return dict(self.items())
 	def __setstate__(self, statedict):
 		"""Blindly sets state with a given getState type dict"""
-		for k,v in statedict.items():
+		for k,v in list(statedict.items()):
 			setattr(self, k, v)
 

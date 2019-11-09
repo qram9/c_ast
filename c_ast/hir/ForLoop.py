@@ -1,8 +1,21 @@
-from Statement import Statement
-from CompoundStatement import CompoundStatement
-from Loop import Loop
-from Expression import Expression
-
+from hir.Statement import Statement
+from hir.CompoundStatement import CompoundStatement
+from hir.Loop import Loop
+from hir.Expression import Expression
+from hir.BinaryExpression import BinaryExpression
+from hir.ConditionalExpression import ConditionalExpression
+from hir.UnaryExpression import UnaryExpression
+from hir.Operator import binaryOperator, unaryOperator, assignmentOperator, conditionalOperator
+from hir.Identifier import Identifier
+from hir.ExpressionStatement import ExpressionStatement
+from hir.VariableDeclaration import VariableDeclaration
+from hir.DeclarationStatement import DeclarationStatement
+from hir.Keyword import specifiers
+from hir.VariableDeclarator import VariableDeclarator
+from hir.AssignmentExpression import AssignmentExpression
+from hir.IntegerLiteral import IntegerLiteral
+from hir.FloatLiteral import FloatLiteral
+from hir.CompoundStatement import CompoundStatement
 class ForLoopException(Exception): pass
 class InvalidBodyTypeError(ForLoopException):
     def __init__(self, value=''):
@@ -27,7 +40,7 @@ Loop class for Pruning tree visitor function, which
 iterate over all Loops, either ForLoop, DoLoop, WhileLoops."""
 
     def __init__(self, *args):
-        """Initializes a ForLoop in HIR from any 
+        """Initializes a ForLoop in HIR from hir.ny 
 iterable sequence. The first three arguments are
 init, condition, step values. The last value is the 
 CompoundStatement holding statements in the loop body"""
@@ -94,8 +107,8 @@ Change this function to return different a representation."""
         retval += repr(self.getBody())
         return retval
 
-from Imports import *
 import copy
+from hir.IfStatement import IfStatementTest
 def ForLoopTest():
 # i = 0
     init = AssignmentExpression(Identifier('i'), \
@@ -119,11 +132,10 @@ def ForLoopTest():
     args2 = copy.deepcopy(id1), assignmentOperator.EQUAL, copy.deepcopy(id2)
     args3 = copy.deepcopy(id1), assignmentOperator.MODULUS, copy.deepcopy(id2)
     args4 = copy.deepcopy(args3)
-    assignments = [AssignmentExpression(*k) for k in args1, args2, args3, args4]
-    r = map(ExpressionStatement, assignments)
+    assignments = [AssignmentExpression(*k) for k in [args1, args2, args3, args4]]
+    r = list(map(ExpressionStatement, assignments))
 #adding the statements to the body of the ForLoop
-    map(body.addStatement, r)
-    from IfStatement import IfStatementTest
+    list(map(body.addStatement, r))
     body.addStatement(IfStatementTest())
     forloop = ForLoop(init, condition, step, body)
     return forloop
@@ -163,13 +175,13 @@ def reindent(s, numSpaces):
     return ''.join(lines)
 
 def bfs(IRNode):
-    from bfs import bfsItr
+    from hir.fs import bfsItr
     i = 1
     for k in bfsItr(IRNode):
-        print '%d:'%(i), reindent(str(k), i)
+        print(('%d:'%(i), reindent(str(k), i)))
         i += 1
 
 if __name__ == '__main__':
     forloop = ForLoopTest()
-    print forloop
+    print (forloop)
 
