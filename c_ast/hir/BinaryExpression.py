@@ -1,6 +1,6 @@
 from hir.Expression import Expression
 from hir.Operator import binaryOperator
-from hir.Operator import getBinaryOperatorList, getAssignmentOperatorList, getConditionalOperatorList
+from hir.Operator import getBinaryOperatorList, getAssignmentOperatorList, getConditionalOperatorList, getAccessOperatorList
 
 class BinaryExpressionException(Exception): pass
 class InvalidBinaryOperatorTypeError(BinaryExpressionException): pass
@@ -18,9 +18,11 @@ Care must be taken here if you have made a copy
 of an individual operator type."""
         bops = getBinaryOperatorList()
         aops = getAssignmentOperatorList()
+        accessops = getAccessOperatorList()
         cops = getConditionalOperatorList()
         bops.extend(aops)
         bops.extend(cops)
+        bops.extend(accessops)
         allops = bops
         for anop in allops:
             if anop == uop:
@@ -111,16 +113,19 @@ __getstate__ like string->attr dict"""
 from hir.Operator import binaryOperator
 from hir.Identifier import Identifier
 def BinaryExpressionTest():
-    return BinaryExpression(Identifier('a'), binaryOperator.SUBTRACT, Identifier('b'))
+    return BinaryExpression(Identifier('a', None, False),
+            binaryOperator.SUBTRACT, Identifier('b', None, False))
 
 from hir.Operator import binaryOperator
 from hir.Identifier import Identifier
 import pickle
 from hir.bfs import bfsItr
 if __name__ == '__main__':
-    binary_exp1 = BinaryExpression(Identifier('a'), binaryOperator.SUBTRACT, Identifier('b'))
+    binary_exp1 = BinaryExpression(Identifier('a', None, False),
+            binaryOperator.SUBTRACT, Identifier('b', None, False))
     binary_exp1.setParens(True)
-    binary_exp2 = BinaryExpression(Identifier('a'), binaryOperator.SUBTRACT, Identifier('b'))
+    binary_exp2 = BinaryExpression(Identifier('a', None, False),
+            binaryOperator.SUBTRACT, Identifier('b', None, False))
     binary_exp2.setParens(False)
     binary_exp3 = BinaryExpression(binary_exp1, binaryOperator.ADD, binary_exp2)
     print((repr(binary_exp3)))

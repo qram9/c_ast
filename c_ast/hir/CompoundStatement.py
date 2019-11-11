@@ -2,6 +2,7 @@ from hir.Statement import Statement
 from hir.SymbolTable import SymbolTable
 from hir.Declaration import Declaration
 from hir.DeclarationStatement import DeclarationStatement
+from hir.SymbolTable import SymbolNotFound
 
 class CompoundStatementException(Exception): pass
 class NotAStatementError(CompoundStatementException): pass
@@ -68,7 +69,7 @@ DeclarationStatement, its entries are put into the symbol table"""
     def addStatementAfter(self, ref_stmt, stmt):
         """Adds a statement after a referenced statement in 
 compound statement object. If the statement is of a type 
-DeclarationStatement, its entries are put into the symbol table"""
+DeclarationStatement, its entries are put into the symbol table."""
         self._catchNotAStatementError(stmt)
         self._catchNotAStatementError(ref_stmt)
         self._catchStatementNotFoundError(ref_stmt)
@@ -78,13 +79,14 @@ DeclarationStatement, its entries are put into the symbol table"""
         self.insertAfter(ref_stmt, stmt)
 
     def getSymbolTable(self):
-        """Returns the SymbolTable object belonging to this compound statement object"""
+        """Returns the SymbolTable object belonging to this compound
+statement object."""
         return self.symbolTable
 
     def getParentTables(self):
-        """Returns a list of SymbolTable objects from hir.he parents of 
+        """Returns a list of SymbolTable objects from parents of 
 this compound statement object. Traverses the parent hierarchy 
-of this compound statement and adds an SymbolTable object if it finds one"""
+of this compound statement and adds an SymbolTable object if it finds one."""
         retlist = []
         p = self.getParent()
         while p:
@@ -100,7 +102,7 @@ parent hierarchy"""
         try:
             k = self.symbolTable.findSymbol(identifier)
             return k
-        except KeyError:
+        except SymbolNotFound:
             p = self.getParent()
             while p:
                 if hasattr(p, 'symbolTable'):
@@ -114,7 +116,10 @@ parent hierarchy"""
         raise SymbolNotFoundError(str(identifier))
 
     def __repr__(self):
-        """Returns a string representation of the contents of the compound statement object with enclosing {}. Currently the string is in AnsiC. Change this function to return different a representation."""
+        """Returns a string representation of the contents
+of the compound statement object with enclosing {}.
+Currently the string is in AnsiC. Change this 
+function to return different a representation."""
         retval = '{\n'
         for k in self.getChildren():
             retval += repr(k) + '\n'
@@ -152,13 +157,14 @@ from hir.DeclarationStatement import DeclarationStatement
 from hir.Keyword import specifiers
 from hir.VariableDeclarator import VariableDeclarator
 
-def CompoundStatementTest():
-    id1 = Identifier('a')
-    id2 = Identifier('b')
+def CompoundStatementTest(parent):
+    id1 = Identifier('a', parent, False)
+    id2 = Identifier('b', parent, False)
     binexp1 = BinaryExpression(id1, binaryOperator.ADD, id2)
     binexp2 = BinaryExpression(id1, binaryOperator.ADD, id2)
     binexp3 = BinaryExpression(id1, binaryOperator.ADD, id2)
-    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8, VariableDeclarator(Identifier('y'))))
+    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8,
+        VariableDeclarator(Identifier('y', parent, False))))
     Y = decl1
     expstmt1 = ExpressionStatement(binexp1)
     expstmt2 = ExpressionStatement(binexp2)
@@ -168,12 +174,14 @@ def CompoundStatementTest():
     compstmt.addStatementAfter(decl1, expstmt1)
     print (compstmt)
     k = CompoundStatement()
-    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8, VariableDeclarator(Identifier('x'))))
+    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8,
+        VariableDeclarator(Identifier('x', compstmt, False))))
     k.addStatement(decl1)
     k.addStatement(expstmt2)
     compstmt.addStatement(k)
     l = CompoundStatement()
-    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8, VariableDeclarator(Identifier('z'))))
+    decl1 = DeclarationStatement(VariableDeclaration(specifiers.int8,
+        VariableDeclarator(Identifier('z', compstmt, False))))
     l.addStatement(decl1)
     l.addStatement(expstmt2)
     k.addStatement(l)
@@ -182,9 +190,10 @@ def CompoundStatementTest():
     print(('next compstmt:\n', compstmt))
     print ('symtabl:')
     print(('parent symtabl:', k.getParentTables()))
-    print(('symbol look up:', k.findSymbol(Y.getDeclaration().getDeclaredSymbols()[0])))
+    print(('symbol look up:',
+        k.findSymbol(Y.getDeclaration().getDeclaredSymbols()[0])))
     return compstmt
 
 if __name__ == '__main__':
-    compstmt = CompoundStatementTest()
+    compstmt = CompoundStatementTest(None)
 

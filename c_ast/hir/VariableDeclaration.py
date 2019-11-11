@@ -112,14 +112,14 @@ if __name__ == '__main__':
     from hir.Identifier import Identifier
     from hir.Keyword import specifiers
 #Test1: (meant to work)
-    decl = VariableDeclarator(Identifier('x'))
+    decl = VariableDeclarator(Identifier('x', None, False))
     spec = specifiers.int16
     vardecl = VariableDeclaration(spec, decl)
     print(('test1: ' + repr(vardecl)))
 #Test2: (meant to work):
 #decl = decl
 #spec = list of Specifier
-    decl = VariableDeclarator(Identifier('y'))
+    decl = VariableDeclarator(Identifier('y', None, False))
     spec = [specifiers.Global, specifiers.int16]
     vardecl = VariableDeclaration(spec, decl)
     print(('test 2: ' + repr(vardecl)))
@@ -127,7 +127,8 @@ if __name__ == '__main__':
 # decl == list of declarator
 # spec == Specifier
     spec = specifiers.int16
-    decl = [VariableDeclarator(Identifier('z')), VariableDeclarator(Identifier('w'))]
+    decl = [VariableDeclarator(Identifier('z', None, False)),
+            VariableDeclarator(Identifier('w', None, False))]
     vardecl = VariableDeclaration(spec, decl)
     print(('test 3: ' + repr(vardecl)))
     print((vardecl.getDeclaredSymbols()))

@@ -3,7 +3,6 @@ from hir.Declarator import Declarator
 from hir.SymbolTable import SymbolTable
 from hir.Specifier import Specifier
 from hir.CompoundStatement import CompoundStatement
-from hir.Identifier import Identifier
 from hir.ParameterDeclarator import ParameterDeclarator
 from hir.BinaryExpression import BinaryExpression
 from hir.ConditionalExpression import ConditionalExpression
@@ -19,16 +18,20 @@ from hir.AssignmentExpression import AssignmentExpression
 from hir.IntegerLiteral import IntegerLiteral
 from hir.FloatLiteral import FloatLiteral
 from hir.CompoundStatement import CompoundStatement
+
 class ProcedureException(Exception): pass
 class LeadSpecNotASpecifierError(ProcedureException):  pass
 class BodyNotCompoundStatementError(ProcedureException): pass
 class NotAParameterDeclaratorError(ProcedureException): pass
+
 class Procedure(Declaration):
     """Represents a Ansi C Procedure (also called Function) type.
     The Procedure is also a Declaration type and must be part of 
     the symbol table of a translation unit (or a file type). 
-    Currently support for TranslationUnit is pending. """
-    __slots__ = ['lead', 'symbolTable', 'proc_id', '_params']
+    Currently support for TranslationUnit is pending."""
+
+    __slots__ = ('lead', 'symbolTable', 'proc_id', '_params')
+
     def _processDecl(self, params):
         if not isinstance(params, ParameterDeclarator):
             raise NotAParameterDeclaratorError(type(params))
@@ -38,6 +41,7 @@ class Procedure(Declaration):
             if not isinstance(child, Declaration):
                 for l in child.getDeclaredSymbols():
                     self.symbolTable.addDeclaration(l, child)
+
     def __init__(self, iden, body, params, lead=[]):
         """Initializes procedure declarations with 
         lead parameters, Identifier for the 
@@ -60,12 +64,16 @@ class Procedure(Declaration):
                 raise LeadSpecNotASpecifierError(type(k))
             self.lead.append(k)
         self._processDecl(params)
+
     def getBody(self):
         return self.getChild(0)
+
     def getIdentifier(self):
         return self.proc_id
+
     def getSymbolTable(self):
         return self.symbolTable
+
     def getParentTables(self):
         retlist = []
         p = self.getParent()
@@ -74,6 +82,7 @@ class Procedure(Declaration):
                 retlist.insert(0, p.getSymbolTable())
             p = p.getParent()    
         return retlist
+
     def findSymbol(self, name):
         try:
             k = self.symbolTable.findSymbol(name)
@@ -87,6 +96,7 @@ class Procedure(Declaration):
                 except KeyError:
                     pass
         raise SymbolNotFoundError(str(name))
+
     def __repr__(self):
         """Returns Ansi C representation of a Procedure,
 for example int proc_name (...) {...}. Change this 
@@ -99,6 +109,7 @@ function is printed"""
         retval += repr(self._params)
         retval += repr(self.getChild(0))
         return retval
+
     __str__ = __repr__
 
     def items(self):
@@ -127,6 +138,8 @@ for pickle and copy"""
         """Blindly sets the contents of statedict to __slots__"""
         for k,v in list(statedict.items()):
             setattr(self, k, v)
+
+from hir.AstBuild import *
 from hir.ForLoop import ForLoopTest
 from hir.ParameterDeclarator import ParameterDeclaratorTest    
 from hir.Identifier import Identifier
@@ -135,15 +148,15 @@ from hir.CompoundStatement import CompoundStatement
 from hir.IfStatement import IfStatementTest
 
 def procedureTest():
-    forstmt = ForLoopTest()
-    params = ParameterDeclaratorTest()#ParameterDeclarator() 
-    proc_name = Identifier('my_proc')
+    compstmt = COMPSTM()
+    forstmt = ForLoopTest(None)
+    params = ParameterDeclaratorTest()
+    proc_name = ID('my_proc', None, False)
     lead = [specifiers.int8]
-    compstmt = CompoundStatement()
     compstmt.addStatement(forstmt)
     ifstmt = IfStatementTest()
     compstmt.addStatement(ifstmt)
-    p = Procedure(proc_name, compstmt, params, lead)
+    p = FUNCTION(proc_name, compstmt, params, lead)
     return p
 
 if __name__ == '__main__':
@@ -152,3 +165,4 @@ if __name__ == '__main__':
     print('Procedure test, ', p)
     print('Procedure test, copy', copy.deepcopy(p))
     print(p)
+

@@ -28,7 +28,7 @@ a new scope."""
 
 from hir.Identifier import Identifier
 def CaseTest():
-    c = Case(Identifier('a'))
+    c = Case(Identifier('a', None, False))
     return c
 
 if __name__ == '__main__':

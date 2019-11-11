@@ -32,6 +32,7 @@ type Expression"""
             Traversable.setChild(self, which, t)
         else:
             raise ChildNotAnExpressionError(str(type(t)))
+        return self
 
     def __repr__(self):
         """Returns a string representation of the contents 
@@ -58,12 +59,15 @@ Change this function to return different a representation."""
     def getParens(self):
         """Returns true if __ slots__ entry _needs_parens is set"""
         return self._needs_parens
+
     def setParens(self, f):
         """Sets __slots__ entry _needs_parens to true or false. If true, 
 printing will return the contents of the expression enclosed in ()"""
         if not isinstance(f, bool):
             raise InvalidTypeNeedsParensError( type(f))
         self._needs_parens = f
+        return self
+
     def items(self):
         """Returns items dict when called from hir.etstate. 
 Adds __slots__ entry "_needs_parens" to items dict.
@@ -77,6 +81,7 @@ Recurses into base classes and collects items from hir.here too."""
                 for k,v in list(supitems.items()):
                     items[k] = v
         return dict(items)
+
     def __getstate__(self):
         """Returns a dict representing the contents of 
 this Expression object and its base classes 
@@ -84,6 +89,7 @@ instances' contents. Uses the items() function.
 Contents added here is _needs_parens, by calling
 'items' function"""
         return dict(self.items())
+
     def __setstate__(self, statedict):
         """Blindly calls setattr with entried from hir. 
 __getstate__ like string->attr dict"""

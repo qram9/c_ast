@@ -11,24 +11,30 @@ class Identifier(IDExpression):
     Use the _name entry to look up in the symbol table
     hierarchy to find a corresponding Declaration. Subclasses
     IDExpression"""
-    __slots__ = ['_name']
-    def __init__(self, name, isGlobal=False, isTypename=False):
-        """Initializes an Identifier from hir.iven arguments.
-        Expect name to be type python <str>. isGlobal, isTypename
-        are more AnsiC specific and not supported for DFC."""
-        IDExpression.__init__(self, isGlobal, isTypename)
+
+    __slots__ = ['_name', '_parent']
+
+    def __init__(self, name, parent, test=True, isGlobal=False, isTypename=False):
+        """Initializes an Identifier from given arguments.
+        Expect name to be type python <str>. isGlobal, isTypename..."""
         if not isinstance(name, str):
             raise InvalidNameTypeError( type(name))
         self._name = name
+        IDExpression.__init__(self, isGlobal, isTypename)
+        if test:
+            self.findSymbol()
+
     def setName(self, name):
         """Sets the name __slots__ entry to a
         given <str>"""
         if not isinstance(name, str):
             raise InvalidNameTypeError( type(name))
         self._name = name
+
     def getName(self):
         """Returns the string __slots__ entry for name"""
         return self._name
+
     def findSymbol(self):
         """Looks up this identifier in the parent hierarchy and gets
         the SymbolTable entry for it"""
@@ -41,11 +47,14 @@ class Identifier(IDExpression):
             else:
                 p = p.getParent()
         raise SymbolTableError(repr(self))
+
     def __repr__(self):
         #return 'Identifier(%s)' % (self.getName())
         return self.getName()
+
     def __str__(self):
         return self.getName()
+
     def items(self):
         """Returns items dict when called from hir.etstate.
         Adds __slots__ entry "_name" to items dict.
@@ -81,6 +90,5 @@ class Identifier(IDExpression):
         return hash(repr(self.getName()))
 
 if __name__ == '__main__':
-    z = Identifier('z')
-    r = Identifier('z')
-    # TODO ->> BEEF THIS UP
+    z = Identifier('z', None, False)
+    r = Identifier('z', None, False)

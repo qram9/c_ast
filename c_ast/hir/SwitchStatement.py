@@ -36,12 +36,12 @@ different string."""
 
     __str__ = __repr__
 
-from hir.Imports import *
+from hir.AstBuild import *
 from hir.CompoundStatement import CompoundStatementTest
 def SwitchTest():
-    body = CompoundStatementTest()
-    condition = ConditionalExpression(Identifier('a'), \
-conditionalOperator.COMPARE_LE, Identifier('b'))
+    body = CompoundStatementTest(None)
+    condition = ConditionalExpression(Identifier('a', body, None),
+conditionalOperator.COMPARE_LE, Identifier('b', body, None))
     return SwitchStatement(condition, body)
 
 if __name__ == '__main__':

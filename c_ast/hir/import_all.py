@@ -26,7 +26,6 @@ from hir.IntegerLiteral  import *
 from hir.Keyword  import *
 from hir.Literal  import *
 from hir.Loop  import *
-from hir.odict  import *
 from hir.ReturnStatement  import *
 from hir.Specifier  import *
 from hir.Statement  import *

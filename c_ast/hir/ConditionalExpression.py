@@ -15,7 +15,7 @@ uop, false_expr)
 
 from hir.Identifier import Identifier
 if __name__ == '__main__':
-    exp1 = Identifier('a')
-    exp2 = Identifier('b')
+    exp1 = Identifier('a', None, False)
+    exp2 = Identifier('b', None, False)
     cond_exp = ConditionalExpression(exp1, conditionalOperator.COMPARE_EQ, exp2)
     print((repr(cond_exp)))

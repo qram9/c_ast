@@ -1,4 +1,4 @@
-# A FUNCTION CALL TYPE IN ANSI C. Not supported for TcGen
+
 from hir.Expression import Expression
 
 class InvalidTypeFunctionCallError(Exception):
@@ -41,7 +41,7 @@ class FunctionCall(Expression):
                         self.setChild(r, k)
                         r = r+1
     def __repr__(self):
-        retval = repr(self.getChild(0)) + ' ('
+        retval = repr(self.getChild(0)) + '('
         if self.getNumChildren() > 1:
             arglist = []
             for k in range(1,self.getNumChildren()):
@@ -53,10 +53,11 @@ class FunctionCall(Expression):
 
 from hir.Identifier import Identifier
 def FunctionCallTest():
-    k = FunctionCall(Identifier('fun'))
+    k = FunctionCall(Identifier('fun', None, False))
     print(k)
-    args = [Identifier('a'), Identifier('b')]
-    k = FunctionCall(Identifier('fun'), args)
+    args = [Identifier('a', None, False),
+            Identifier('b', None, False)]
+    k = FunctionCall(Identifier('fun', None, False), args)
     print(k)
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 from hir.Declaration import Declaration
 from hir.Declarator import Declarator
+
 class ParameterDeclaratorException(Exception): pass
 class ParameterNotADeclarationError(Exception): pass
 
@@ -7,6 +8,7 @@ class ParameterDeclarator(Declarator):
     """ Represents a parameter list that is used by 
 Procedure declarations. 
 For example (int x, int y, int z[])"""
+
     def __init__(self, params=[]):
         """Initializes a ParameterDeclaration from hir.
 list type argument 'params'. Sets the number of 
@@ -44,9 +46,12 @@ from hir.Keyword import specifiers
 from hir.VariableDeclaration import VariableDeclaration
 from hir.VariableDeclarator import VariableDeclarator
 from hir.Identifier import Identifier
+
 def ParameterDeclaratorTest():
-    k = VariableDeclaration(specifiers.chaR, VariableDeclarator(Identifier('a')))
-    l = VariableDeclaration(specifiers.chaR, VariableDeclarator(Identifier('b')))
+    k = VariableDeclaration(specifiers.chaR,
+            VariableDeclarator(Identifier('a', None, False)))
+    l = VariableDeclaration(specifiers.chaR,
+            VariableDeclarator(Identifier('b', None, False)))
     r = ParameterDeclarator([k,l])
     return r
 

@@ -62,9 +62,10 @@ Change this function to return different a representation."""
 
 from hir.Identifier import Identifier
 def ArrayAccessTest():
-    a = ArrayAccess(Identifier('k'), [Identifier(k) for k in ['a', 'b','c']])
+    a = ArrayAccess(Identifier('k', None, False),
+            [Identifier(k, None, False) for k in ['a', 'b','c']])
     print(a)
-    b = ArrayAccess(Identifier('k'), Identifier('i'))
+    b = ArrayAccess(Identifier('k', None, False), Identifier('i', None, False))
     print(b)
     return b
 

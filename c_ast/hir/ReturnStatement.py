@@ -8,6 +8,8 @@ class InvalidReturnTypeError(Exception):
         return 'Invalid Return Type:(%s) for ReturnStatement, expecting Expression' % (value)
 
 class ReturnStatement(Statement):
+    __slots__ = ()
+
     def __init__(self, retvalue=None):
         self.initialize()
         if retvalue:
@@ -16,6 +18,7 @@ class ReturnStatement(Statement):
                 self.setChild(0, retvalue)
             else:
                 raise InvalidReturnTypeError(str(type(retvalue)))
+
     def __repr__(self):
         if len(self.getChildren()) == 0:
             return 'return;'
@@ -27,5 +30,5 @@ class ReturnStatement(Statement):
 
 if __name__ == '__main__':
     from hir.Identifier import Identifier
-    print(ReturnStatement())    
-    print(ReturnStatement(Identifier('k')))
+    print(ReturnStatement())
+    print(ReturnStatement(Identifier('k', None, False)))

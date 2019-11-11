@@ -45,4 +45,3 @@ python3 hir/WhileLoop.py || exit
 python3 hir/__init__.py || exit
 python3 hir/bfs.py || exit
 python3 hir/import_all.py || exit
-python3 hir/odict.py || exit

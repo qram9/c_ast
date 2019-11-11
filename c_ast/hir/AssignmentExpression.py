@@ -1,5 +1,6 @@
 from hir.BinaryExpression import BinaryExpression
 from hir.Operator import assignmentOperator
+
 class AssignmentExpression(BinaryExpression):
     """Assignment Expression works on any 
 sequence with three args, lhs, op, rhs. 
@@ -12,8 +13,10 @@ instances."""
         BinaryExpression.__init__(self, lhs, op, rhs)
 
 from hir.Identifier import Identifier
+
 def AssignmentExpressionTest():
-    return AssignmentExpression(Identifier('a'), assignmentOperator.ADD, Identifier('b'))
+    return AssignmentExpression(Identifier('a', None, False),
+            assignmentOperator.ADD, Identifier('b', None, False))
 
 if __name__ == '__main__':
     print(AssignmentExpressionTest())

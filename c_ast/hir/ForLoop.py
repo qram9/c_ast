@@ -16,22 +16,28 @@ from hir.AssignmentExpression import AssignmentExpression
 from hir.IntegerLiteral import IntegerLiteral
 from hir.FloatLiteral import FloatLiteral
 from hir.CompoundStatement import CompoundStatement
+
 class ForLoopException(Exception): pass
+
 class InvalidBodyTypeError(ForLoopException):
     def __init__(self, value=''):
         self.value = value
+
     def __repr__(self):
         return 'Invalid type for Body:(%s), expecting Statement or CompoundStatement' % value
+
 class InvalidTypeForIndexExpressionError(ForLoopException):
     def __init__(self, value=''):
         self.value = value
     def __repr__(self):
         return 'Invalid type for loop index expression: (%s), expecting expression type' % value
+
 class BodyNotSetError(ForLoopException): pass
 
 class ForLoop(Statement, Loop):
     """Represents a Counting based FOR Loop 
-for use in DFC programs. Currently, the supported 
+for use in functional like programs.
+Currently, the supported 
 syntax expects 3 HIR Expressions and a 
 CompoundStatement type for Loop body. ForLoop
 subclasses Loop (other than Statement), for 
@@ -51,6 +57,7 @@ CompoundStatement holding statements in the loop body"""
         self.setCondition(condition)
         self.setStep(step)
         self.setBody(body)
+
 #    def addDeclaration(self, decl):
 #        """Provides a direct entry into the symbol table of the 
 #CompoundStatement"""
@@ -62,18 +69,21 @@ Expects a HIR Expression type here."""
         if not isinstance(expr, Expression):
             raise InvalidTypeForIndexExpressionError(str(type(expr))+':'+repr(expr))
         self.setChild(0, expr)
+
     def setCondition(self, expr):
         """Sets the exit-condition expression for the ForLoop.
 Expects a HIR Expression type here."""
         if not isinstance(expr, Expression):
             raise InvalidTypeForIndexExpressionError(str(type(expr))+':'+repr(expr))
         self.setChild(1, expr)
+
     def setStep(self, expr):
         """Sets the step expression for the ForLoop.
 Expects a HIR Expression type here."""
         if not isinstance(expr, Expression):
             raise InvalidTypeForIndexExpressionError(str(type(expr))+':'+repr(expr))
         self.setChild(2, expr)
+
     def setBody(self, stmt):
         """Sets the body of the ForLoop to either a
 passed CompoundStatement or a new CompoundStatement that 
@@ -84,18 +94,23 @@ wraps a passed Statement type"""
             self.setChild(3, CompoundStatement().addStatement(stmt))
         else:
             raise InvalidBodyTypeError(str(type(stmt)))
+
     def getInit(self):
         """Returns the Init expression"""
         return self.getChild(0)
+
     def getCondition(self):
         """Returns the exit-Condition expression"""
         return self.getChild(1)
+
     def getStep(self):
         """Returns the step expression"""
         return self.getChild(2)
+
     def getBody(self):
         """Returns the body CompoundStatement"""
         return self.getChild(3)
+
     def __repr__(self):
         """Returns a string representation of the contents 
 of the for loop object (Example: 'for (...,...,...) {...}' 
@@ -109,24 +124,28 @@ Change this function to return different a representation."""
 
 import copy
 from hir.IfStatement import IfStatementTest
-def ForLoopTest():
+
+def ForLoopTest(parent=None):
+    doTest = False
+    if parent is not None:
+        doTest = True
 # i = 0
-    init = AssignmentExpression(Identifier('i'), \
+    init = AssignmentExpression(Identifier('i', parent, doTest), \
             assignmentOperator.EQUAL, IntegerLiteral(0))
 # i++
-    step = UnaryExpression(unaryOperator.POST_INCREMENT, Identifier('i'))
+    step = UnaryExpression(unaryOperator.POST_INCREMENT, Identifier('i', parent, False))
 # i < 100
-    condition = ConditionalExpression(Identifier('i'), \
+    condition = ConditionalExpression(Identifier('i', parent, doTest), \
             conditionalOperator.COMPARE_LE, IntegerLiteral(100))
 # A body for the for loop
     body = CompoundStatement()
 # a variable declaration: inT y
     decl1 = DeclarationStatement(VariableDeclaration(specifiers.inT, \
-            VariableDeclarator(Identifier('y'))))
+            VariableDeclarator(Identifier('y', body, doTest))))
     body.addStatement(decl1)
 # identifiers a, b
-    id1 = Identifier('a')
-    id2 = Identifier('y')
+    id1 = Identifier('a', parent, doTest)
+    id2 = Identifier('y', parent, doTest)
 # assignment expression, a += b, a = b, a %= b
     args1 = id1, assignmentOperator.ADD, id2
     args2 = copy.deepcopy(id1), assignmentOperator.EQUAL, copy.deepcopy(id2)
@@ -140,26 +159,27 @@ def ForLoopTest():
     forloop = ForLoop(init, condition, step, body)
     return forloop
 
-def ForLoopTest2():    
+def ForLoopTest2(symtab):    
 # i = 0
-    init = AssignmentExpression(Identifier('i'), \
+    init = AssignmentExpression(Identifier('i', None, False), \
             assignmentOperator.EQUAL, IntegerLiteral(0))
 # i++
-    step = UnaryExpression(unaryOperator.POST_INCREMENT, Identifier('i'))
+    step = UnaryExpression(unaryOperator.POST_INCREMENT,
+            Identifier('i', None, False))
 # i < 100
-    condition = ConditionalExpression(Identifier('i'), \
+    condition = ConditionalExpression(Identifier('i', None, False), \
             conditionalOperator.COMPARE_LE, IntegerLiteral(100))
 # A body for the for loop
     body = CompoundStatement()
 # a variable declaration: inT y
     decl1 = DeclarationStatement(VariableDeclaration(specifiers.inT, \
-            VariableDeclarator(Identifier('y'))))
+            VariableDeclarator(Identifier('y', None, False, None, False))))
     body.addStatement(decl1)
 # identifiers a, b
-    id1 = Identifier('a')
-    id2 = Identifier('y')
+    id1 = Identifier('a', None, False)
+    id2 = Identifier('y', None, False)
     as1 = ExpressionStatement(AssignmentExpression(id2, \
-                assignmentOperator.EQUAL, Identifier('i')))
+                assignmentOperator.EQUAL, Identifier('i', None, False)))
     as2 = ExpressionStatement(AssignmentExpression(copy.deepcopy(id1), \
                 assignmentOperator.EQUAL, id2))
     body.addStatement(as1)
@@ -184,4 +204,3 @@ def bfs(IRNode):
 if __name__ == '__main__':
     forloop = ForLoopTest()
     print (forloop)
-

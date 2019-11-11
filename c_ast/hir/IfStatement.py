@@ -70,13 +70,16 @@ class IfStatement(Statement):
         except:
             pass
         return retval
+
 def IfStatementTest():
     import copy
-    control = ConditionalExpression(Identifier('a'), conditionalOperator.COMPARE_GT, IntegerLiteral(0))
-    assignexp1 = AssignmentExpression(Identifier('a'), assignmentOperator.ADD, Identifier('b'))
+    control = ConditionalExpression(Identifier('a', None, False),
+            conditionalOperator.COMPARE_GT, IntegerLiteral(0))
+    assignexp1 = AssignmentExpression(Identifier('a', None, False),
+            assignmentOperator.ADD, Identifier('b', None, False))
     assignStmt1 = ExpressionStatement(assignexp1)
     decl1 = DeclarationStatement(VariableDeclaration(specifiers.inT, \
-            VariableDeclarator(Identifier('y'))))
+            VariableDeclarator(Identifier('y', None, False))))
     body = CompoundStatement()
     body.addStatement(decl1)
     copy_ifbody = copy.deepcopy(body)
@@ -84,9 +87,11 @@ def IfStatementTest():
     assignStmt2 = copy.deepcopy(assignStmt1)
     copy_ifbody.addStatement(assignStmt2)
     ifconstruct = IfStatement(control, body)
-    control = ConditionalExpression(Identifier('a'), conditionalOperator.COMPARE_LT, IntegerLiteral(0))
+    control = ConditionalExpression(Identifier('a', None, False),
+            conditionalOperator.COMPARE_LT, IntegerLiteral(0))
     ifconstruct = IfStatement(control, copy_ifbody, ifconstruct)
-    return ifconstruct    
+    return ifconstruct
+
 if __name__ == '__main__':
     print(IfStatementTest())
     

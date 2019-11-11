@@ -1,7 +1,9 @@
 from hir.Statement import Statement
 from hir.Declaration import Declaration
+
 class NotADeclarationError(Exception):
     pass
+
 class DeclarationStatement(Statement):
     """Represents a declaration statement 
 like 'int a;' or 'int proc_name (int).
@@ -21,10 +23,12 @@ ProcedureDeclaration. Raises Exception if not either type"""
             raise NotADeclarationError('Type: (%s)' % (type(exp)))
         self.setChild(0, exp)
         exp.setParent(self)
+
     def getDeclaration(self):
         """Returns the declaration associated with this
 DeclarationStatement."""
         return self.getChild(0)
+    
     def __repr__(self):
         retval = repr(self.getDeclaration()) + ';'
         return retval
@@ -36,6 +40,7 @@ from hir.Identifier import Identifier
 from hir.Keyword import specifiers
 
 if __name__ == '__main__':
-    k = VariableDeclaration(specifiers.int8, VariableDeclarator(Identifier('y')))
+    k = VariableDeclaration(specifiers.int8,
+            VariableDeclarator(Identifier('y', None, False)))
     s = DeclarationStatement(k)
     print((repr(s)))
