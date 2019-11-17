@@ -1,60 +1,85 @@
-class TraversableException(Exception): pass
+class TraversableException(Exception):
+    pass
+
+
 class NumChildrenNotSetError(TraversableException):
     """Raise exception if not 
 'number of children of a traversable node 
 must be set prior to inserting children'"""
+
     def __init__(self, func='', iden=0):
         self.value1 = value1
         self.value2 = value2
+
     def __str__(self):
-        raise NumChildrenNotSetError('Set number of children for traversable class on calling: (%s) for Traversable: (%s)' % (self.func, str(self.iden)))
+        raise NumChildrenNotSetError(
+            'Set number of children for traversable'
+            ' class on calling: (%s) for Traversable: (%s)'
+            % (self.func, str(self.iden)))
+
 
 class ChildIndexOutOfRangeError(TraversableException):
     """An index for a child must be smaller than _num_children"""
+
     def __init__(self, value1=0, value2=0):
         self.value1 = value1
         self.value2 = value2
+
     def __str__(self):
-        return 'Invalid Index for children((referedIndex(%d), lastIndex(%d))'%(self.value1, self.value2)
+        return ('Invalid Index for children((referedIndex(%d),'
+                ' lastIndex(%d))' % (self.value1, self.value2))
+
 
 class ParentNotTraversableError(TraversableException):
     """Parent must be a Traversable type"""
+
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         return 'Invalid type: (%s) for parent, must subclass Traversable' % (self.value)
+
 
 class ChildNotTraversableError(TraversableException):
     """Exception for Specified Child, must be a Traversable type"""
+
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         return 'Invalid type: (%s) for parent, must subclass Traversable' % (self.value)
 
+
 class ChildNotFoundError(TraversableException):
     """The refered Traversable type child must be present"""
+
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         return 'Specified child: (%s) not found' % (self.value)
+
 
 class ParentNotSetError(TraversableException):
     """Parent must be set for trees"""
     pass
 
+
 class ChildNotSetError(TraversableException):
     """Exception for Specified Child, must be set in traversable"""
     pass
+
 
 class IndexTypeMustBeIntError(TraversableException):
     """Exception for argument for getChild, setChild, setNumChildren, argument must be Integer"""
     pass
 
-#class ParentChildNotOKError(TraversableException):
+# class ParentChildNotOKError(TraversableException):
 #    pass
 
+
 class Traversable(object):
-    __slots__ = ['_parent', '_children', '_num_children']
+    __slots__ = ('_parent', '_children', '_num_children')
 
     def initialize(self):
         """Derived classes have use for this function 
@@ -74,18 +99,22 @@ _children as a list to hold children"""
         """Catch IndexTypeMustBeIntError"""
         if not isinstance(num, int):
             raise IndexTypeMustBeIntError(str(type(num)))
+
     def _catchNumChildrenNotSetError(self, func):
         """Catch NumChildrenNotSetError"""
         if not hasattr(self, '_num_children'):
             raise NumChildrenNotSetError(func, id(self))
+
     def _catchNumChildError(self, which):
         """Catch ChildIndexOutOfRangeError"""
         if which >= self._num_children:
             raise ChildIndexOutOfRangeError(which, self._num_children)
+
     def _catchChildNotTraversableError(self, t):
         """Catch ChildNotTraversableError"""
         if not isinstance(t, Traversable):
             raise ChildNotTraversableError(str(type(t)))
+
     def _catchChildNotFoundError(self, n, t):
         """Catch ChildNotFoundError"""
         try:
@@ -131,7 +160,8 @@ _children. Tests if the insertion will not affect,
 conditions, ChildIndexOutOfRangeError"""
         self._catchNumChildrenNotSetError('setChild')
         if self.getNumChildren() == len(self._children):
-            raise ChildIndexOutOfRangeError (self._num_children+1, self._num_children)
+            raise ChildIndexOutOfRangeError(
+                self._num_children+1, self._num_children)
         self._catchChildNotTraversableError(t)
         self._catchChildNotTraversableError(ref)
         self._catchChildNotFoundError('insertBefore', ref)
@@ -146,7 +176,8 @@ to _children. Tests if the insertion will not affect,
 conditions, ChildIndexOutOfRangeError"""
         self._catchNumChildrenNotSetError('setChild')
         if self.getNumChildren() == len(self._children):
-            raise ChildIndexOutOfRangeError (self._num_children+1, self._num_children)
+            raise ChildIndexOutOfRangeError(
+                self._num_children+1, self._num_children)
         self._catchChildNotTraversableError(t)
         self._catchChildNotTraversableError(ref)
         self._catchChildNotFoundError('insertAfter', ref)
@@ -180,7 +211,7 @@ removeChild and insert t in its place"""
 
     def getParent(self):
         """Get the parent node, (parent can be None)"""
-        return self._parent    
+        return self._parent
 
     def getChildren(self):
         """Get the children list, dangerous method"""
@@ -212,8 +243,8 @@ _num_children, _children, _parent"""
 Returned dict contains __slots__ entries: _num_children, 
 _children, _parent"""
         return dict(self.items())
+
     def __setstate__(self, statedict):
         """Blindly sets state with a given getState type dict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
-

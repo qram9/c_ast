@@ -1,25 +1,37 @@
-class VariableDeclaratorException(Exception): pass
+from hir.Declarator import Declarator
+from hir.PointerSpecifier import PointerSpecifier
+from hir.ArraySpecifier import ArraySpecifier
+from hir.Identifier import Identifier
+
+
+class VariableDeclaratorException(Exception):
+    pass
+
 
 class NotAnIdentifierError(VariableDeclaratorException):
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         return 'Invalid type:(%s), in place of Identifier' % (value)
 
-class UnsupportedTrailingSpecifierError(VariableDeclaratorException): pass
-    
-from hir.Declarator import Declarator
-from hir.Identifier import Identifier
-from hir.ArraySpecifier import ArraySpecifier
+
+class UnsupportedTrailingSpecifierError(VariableDeclaratorException):
+    pass
+
+
+class UnsupportedLeadSpecifierError(VariableDeclaratorException):
+    pass
+
 
 class VariableDeclarator(Declarator):
     """Represents the name of a declared Identifier 
 (and ArraySpecifiers if any. Array specifiers
 are in the __slots__ entry, _trail_spec"""
 
-    __slots__ = ("_trail_spec")
+    __slots__ = ("_lead_spec", "_trail_spec")
 
-    def __init__(self, decl, trail_spec=None):
+    def __init__(self, decl, trail_spec=None, lead_spec=None):
         """Initializes VariableDeclarator with a given
 Identifier type and an ArraySpecifier set, if passed
 as trail_spec argument. Identifiers are also refered to as 
@@ -30,11 +42,15 @@ Identifier type and trail_spec to be ArraySpecifier."""
             raise NotAnIdentifierError(str(type(decl)))
         self.initialize()
         self.setNumChildren(1)
-        self.setChild(0,decl)
+        self.setChild(0, decl)
         if trail_spec:
             if not isinstance(trail_spec, ArraySpecifier):
-                raise UnsupportedTrailingSpecifierError( type(trail_spec))
+                raise UnsupportedTrailingSpecifierError(type(trail_spec))
             self._trail_spec = trail_spec
+        if lead_spec:
+            if not isinstance(lead_spec, PointerSpecifier):
+                raise UnsupportedLeadSpecifierError(type(lead_spec))
+            self._lead_spec = lead_spec
 
     def getSymbol(self):
         """Returns the symbol or the identifier 
@@ -46,10 +62,18 @@ the declarator's symbol, here and elsewhere"""
     def __repr__(self):
         """Returns Ansi C string value corresponding to 
 the variable declarator. For ex. a[10][20]"""
+
+        ret_val = ''
+
+        if hasattr(self, "_lead_spec"):
+            ret_val = repr(self._lead_spec) + ' '
+
+        ret_val += repr(self.getChild(0))
+
         if hasattr(self, "_trail_spec"):
-            return repr(self.getChild(0)) + repr(self._trail_spec)
-        else:
-            return repr(self.getChild(0))
+            ret_val += repr(self._trail_spec)
+
+        return ret_val
 
     __str__ = __repr__
 
@@ -59,13 +83,19 @@ associated with the class. The returned items
 dict contains _trail_spec object from hir.his 
 class and the contents of the __slots__ of the 
 bases of this class"""
+
         items = {}
+
+        if hasattr(self, "_lead_spec"):
+            items["_lead_spec"] = self._lead_spec
+
         if hasattr(self, "_trail_spec"):
             items["_trail_spec"] = self._trail_spec
+
         for k in VariableDeclarator.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -76,12 +106,16 @@ when called by pickle or copy"""
 
     def __setstate__(self, statedict):
         """Blindly sets state based on the items like statedict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
+
 
 if __name__ == '__main__':
     from hir.Identifier import Identifier
     from hir.ArraySpecifier import ArraySpecifierTest
+    from hir.Keyword import CONST, VOLATILE, RESTRICT
     print((VariableDeclarator(Identifier('a', None, False),
-            ArraySpecifierTest())))
-
+                              ArraySpecifierTest())))
+    print((VariableDeclarator(Identifier('a', None, False),
+                              ArraySpecifierTest(),
+                              PointerSpecifier([CONST, RESTRICT, VOLATILE]))))

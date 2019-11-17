@@ -1,9 +1,21 @@
 from hir.IDExpression import IDExpression
 
-class IdentifierException(Exception): pass
-class InvalidNameTypeError(IdentifierException): pass
-class MissingImmediateParentError(IdentifierException): pass
-class SymbolTableError(IdentifierException): pass
+
+class IdentifierException(Exception):
+    pass
+
+
+class InvalidNameTypeError(IdentifierException):
+    pass
+
+
+class MissingImmediateParentError(IdentifierException):
+    pass
+
+
+class SymbolTableError(IdentifierException):
+    pass
+
 
 class Identifier(IDExpression):
     """Represents a variable type in AnsiC.
@@ -18,7 +30,7 @@ class Identifier(IDExpression):
         """Initializes an Identifier from given arguments.
         Expect name to be type python <str>. isGlobal, isTypename..."""
         if not isinstance(name, str):
-            raise InvalidNameTypeError( type(name))
+            raise InvalidNameTypeError(type(name))
         self._name = name
         IDExpression.__init__(self, isGlobal, isTypename)
         if test:
@@ -28,7 +40,7 @@ class Identifier(IDExpression):
         """Sets the name __slots__ entry to a
         given <str>"""
         if not isinstance(name, str):
-            raise InvalidNameTypeError( type(name))
+            raise InvalidNameTypeError(type(name))
         self._name = name
 
     def getName(self):
@@ -39,7 +51,8 @@ class Identifier(IDExpression):
         """Looks up this identifier in the parent hierarchy and gets
         the SymbolTable entry for it"""
         if self.getParent() == None:
-            raise MissingImmediateParentError( 'Expression does not have parent')
+            raise MissingImmediateParentError(
+                'Expression does not have parent')
         p = self.getParent()
         while p:
             if hasattr(p, 'symbolTable'):
@@ -49,7 +62,7 @@ class Identifier(IDExpression):
         raise SymbolTableError(repr(self))
 
     def __repr__(self):
-        #return 'Identifier(%s)' % (self.getName())
+        # return 'Identifier(%s)' % (self.getName())
         return self.getName()
 
     def __str__(self):
@@ -61,13 +74,14 @@ class Identifier(IDExpression):
         Recurses into base classes and collects items
         from hir.here too."""
         items = {}
-        items['_name'] = getattr(self,'_name')
+        items['_name'] = getattr(self, '_name')
         for k in Identifier.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
+
     def __getstate__(self):
         """Returns a dict representing the contents of
         this Identifier object and its base classes
@@ -75,10 +89,11 @@ class Identifier(IDExpression):
         Contents added here is _needs_parens, by calling
         'items' function"""
         return dict(self.items())
+
     def __setstate__(self, statedict):
         """Blindly calls setattr with entried from hir.
         __getstate__ like string->attr dict"""
-        for k,v in statedict.items():
+        for k, v in statedict.items():
             setattr(self, k, v)
 
     def __eq__(self, other):
@@ -86,8 +101,10 @@ class Identifier(IDExpression):
             return repr(self) == repr(other)
         else:
             return False
+
     def __hash__(self):
         return hash(repr(self.getName()))
+
 
 if __name__ == '__main__':
     z = Identifier('z', None, False)

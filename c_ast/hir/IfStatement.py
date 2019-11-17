@@ -15,18 +15,30 @@ from hir.AssignmentExpression import AssignmentExpression
 from hir.IntegerLiteral import IntegerLiteral
 from hir.FloatLiteral import FloatLiteral
 from hir.CompoundStatement import CompoundStatement
+
+
 class NotAStatementError(Exception):
-	def __init__(self, value=''):
-		self.value = value
-	def __repr__(self):
-		return 'Invalid body type:(%s) for If statement' % self.value
-class IfStatementException(Exception): pass
-class InvalidExpressionForConditionError(IfStatementException): pass
+    def __init__(self, value=''):
+        self.value = value
+
+    def __repr__(self):
+        return 'Invalid body type:(%s) for If statement' % self.value
+
+
+class IfStatementException(Exception):
+    pass
+
+
+class InvalidExpressionForConditionError(IfStatementException):
+    pass
+
+
 class IfStatement(Statement):
     """Represents an Ansi C IfStatement, holds 3 children,
     ConditionExpression, 'if' part and the 'else' parts. 'If' parts and
     'else' parts are of type CompoundStatement or Statement. The true and false
     bodies represent a new scope for execution"""
+
     def __init__(self, condition, true_body, false_body=None):
         """Initialize takes 3 parameters, the 
         ConditionalExpression control statement, true_body, false_body 
@@ -45,19 +57,24 @@ class IfStatement(Statement):
             if isinstance(false_body, (CompoundStatement, Statement)):
                 self.setChild(2, false_body)
             else:
-                raise NotAStatementError(str(type(false_body)) + repr(false_body))
+                raise NotAStatementError(
+                    str(type(false_body)) + repr(false_body))
+
     def getControlExpression(self):
         """Returns the control statement that is used in the IF statement"""
         return self.getChild(0)
+
     def getThenStatement(self):
         """Returns the true CompoundStatement body"""
         return self.getChild(1)
+
     def getElseStatement(self):
         """Returns the false CompoundStatement body"""
         try:
             return self.getChild(2)
         except:
             return None
+
     def __repr__(self):
         """Returns the Ansi C representation of the
         HIR If Statement. For ex: if (...) {} else{}"""
@@ -71,15 +88,16 @@ class IfStatement(Statement):
             pass
         return retval
 
+
 def IfStatementTest():
     import copy
     control = ConditionalExpression(Identifier('a', None, False),
-            conditionalOperator.COMPARE_GT, IntegerLiteral(0))
+                                    conditionalOperator.COMPARE_GT, IntegerLiteral(0))
     assignexp1 = AssignmentExpression(Identifier('a', None, False),
-            assignmentOperator.ADD, Identifier('b', None, False))
+                                      assignmentOperator.ADD, Identifier('b', None, False))
     assignStmt1 = ExpressionStatement(assignexp1)
-    decl1 = DeclarationStatement(VariableDeclaration(specifiers.inT, \
-            VariableDeclarator(Identifier('y', None, False))))
+    decl1 = DeclarationStatement(VariableDeclaration(specifiers.inT,
+                                                     VariableDeclarator(Identifier('y', None, False))))
     body = CompoundStatement()
     body.addStatement(decl1)
     copy_ifbody = copy.deepcopy(body)
@@ -88,10 +106,10 @@ def IfStatementTest():
     copy_ifbody.addStatement(assignStmt2)
     ifconstruct = IfStatement(control, body)
     control = ConditionalExpression(Identifier('a', None, False),
-            conditionalOperator.COMPARE_LT, IntegerLiteral(0))
+                                    conditionalOperator.COMPARE_LT, IntegerLiteral(0))
     ifconstruct = IfStatement(control, copy_ifbody, ifconstruct)
     return ifconstruct
 
+
 if __name__ == '__main__':
     print(IfStatementTest())
-    
