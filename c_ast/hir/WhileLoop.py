@@ -35,6 +35,7 @@ from hir.Expression import Expression as EXP
 from hir.BreakStatement import BreakStatement
 
 
+
 class WhileLoop(Statement, Loop):
     """Ansi C while loop. Requires a ConditionalExpression,
 and a compound statement for a body"""
