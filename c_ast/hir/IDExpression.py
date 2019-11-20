@@ -1,7 +1,8 @@
-# This is to be treated like an abstract class, utility 
+# This is to be treated like an abstract class, utility
 # struct, no direct application
 
 from hir.Expression import Expression
+
 
 class IDExpression(Expression):
     __slots__ = ['isTypename', 'isGlobal']
@@ -19,12 +20,12 @@ class IDExpression(Expression):
 
     def items(self):
         items = {}
-        items['isTypename'] = getattr(self,'isTypename')
+        items['isTypename'] = getattr(self, 'isTypename')
         items['isGlobal'] = getattr(self, 'isGlobal')
         for k in IDExpression.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -32,6 +33,5 @@ class IDExpression(Expression):
         return dict(self.items())
 
     def __setstate__(self, statedict):
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
-

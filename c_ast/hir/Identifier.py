@@ -13,6 +13,14 @@ class MissingImmediateParentError(IdentifierException):
     pass
 
 
+class NotAnIdentifierError(IdentifierException):
+    def __init__(self, value=''):
+        self.value = value
+
+    def __str__(self):
+        return 'Invalid type:(%s), in place of Identifier' % (value)
+
+
 class SymbolTableError(IdentifierException):
     pass
 
@@ -26,7 +34,8 @@ class Identifier(IDExpression):
 
     __slots__ = ['_name', '_parent']
 
-    def __init__(self, name, parent, test=True, isGlobal=False, isTypename=False):
+    def __init__(self, name, parent, test=True,
+                 isGlobal=False, isTypename=False):
         """Initializes an Identifier from given arguments.
         Expect name to be type python <str>. isGlobal, isTypename..."""
         if not isinstance(name, str):
@@ -104,6 +113,9 @@ class Identifier(IDExpression):
 
     def __hash__(self):
         return hash(repr(self.getName()))
+
+    def get_symbol(self):
+        return self
 
 
 if __name__ == '__main__':

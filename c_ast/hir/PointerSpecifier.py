@@ -1,17 +1,20 @@
 from hir.Specifier import Specifier
 
+
 class PointerSpecifierException(Exception):
     def __init__(self, value):
         self.value = value
 
+
 class PointerSpecifier(Specifier):
     'Pointer Specifier'
     __slots__ = ('qualifiers')
-    
-    def __init__(self,qual):
+
+    def __init__(self, qual=None):
         self.qualifiers = []
-        for k in qual:
-            self.qualifiers.append(k)
+        if qual is not None:
+            for k in qual:
+                self.qualifiers.append(k)
 
     def __str__(self):
         retval = '*'
@@ -29,7 +32,7 @@ class PointerSpecifier(Specifier):
         for k in PointerSpecifier.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -39,8 +42,9 @@ class PointerSpecifier(Specifier):
 
     def __setstate__(self, statedict):
         """Blindly sets the state of this object, using a statedict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
+
 
 def PointerSpecifierTest():
     from hir.Keyword import CONST, VOLATILE, RESTRICT
@@ -52,8 +56,8 @@ def PointerSpecifierTest():
     print(k)
     k = PointerSpecifier([CONST, RESTRICT, VOLATILE])
     print(k)
+    return k
+
 
 if __name__ == '__main__':
     PointerSpecifierTest()
-
-

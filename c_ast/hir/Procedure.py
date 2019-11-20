@@ -1,5 +1,4 @@
 from hir.ParameterDeclarator import ParameterDeclaratorTest
-from hir.AstBuild import *
 from hir.IfStatement import IfStatementTest
 from hir.ForLoop import ForLoopTest
 from hir.Declaration import Declaration
@@ -22,6 +21,7 @@ from hir.AssignmentExpression import AssignmentExpression
 from hir.IntegerLiteral import IntegerLiteral
 from hir.FloatLiteral import FloatLiteral
 from hir.CompoundStatement import CompoundStatement
+from hir.Identifier import Identifier as ID
 
 
 class ProcedureException(Exception):
@@ -64,17 +64,22 @@ class Procedure(Declaration):
         procedure name, a ParameterDeclarator and a 
         CompoundStatement Body type. Also initializes 
         a symbol table type."""
+
         self.lead = []
         self.initialize()
         Declaration.__init__(self)
         self.setNumChildren(1)
         self.symbolTable = SymbolTable()
+
         if not isinstance(body, CompoundStatement):
             raise BodyNotCompoundStatementError(type(body))
         self.setChild(0, body)
+
         if not isinstance(iden, Identifier):
             raise ProcedureIDNotIdentifierError(type(iden))
+
         self.proc_id = iden
+
         for k in lead:
             if not isinstance(k, Specifier):
                 raise LeadSpecNotASpecifierError(type(k))
@@ -155,9 +160,12 @@ for pickle and copy"""
         for k, v in list(statedict.items()):
             setattr(self, k, v)
 
+    def get_symbol(self):
+        return self.proc_id
+
 
 def procedureTest():
-    compstmt = COMPSTM()
+    compstmt = CompoundStatement()
     forstmt = ForLoopTest(None)
     params = ParameterDeclaratorTest()
     proc_name = ID('my_proc', None, False)
@@ -165,7 +173,7 @@ def procedureTest():
     compstmt.addStatement(forstmt)
     ifstmt = IfStatementTest()
     compstmt.addStatement(ifstmt)
-    p = FUNCTION(proc_name, compstmt, params, lead)
+    p = Procedure(proc_name, compstmt, params, lead)
     return p
 
 

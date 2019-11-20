@@ -2,18 +2,11 @@ from hir.Declarator import Declarator
 from hir.PointerSpecifier import PointerSpecifier
 from hir.ArraySpecifier import ArraySpecifier
 from hir.Identifier import Identifier
+from hir.Identifier import NotAnIdentifierError
 
 
 class VariableDeclaratorException(Exception):
     pass
-
-
-class NotAnIdentifierError(VariableDeclaratorException):
-    def __init__(self, value=''):
-        self.value = value
-
-    def __str__(self):
-        return 'Invalid type:(%s), in place of Identifier' % (value)
 
 
 class UnsupportedTrailingSpecifierError(VariableDeclaratorException):
@@ -39,7 +32,8 @@ symbols elsewhere in this document.
 Requires declarator name to be 
 Identifier type and trail_spec to be ArraySpecifier."""
         if not isinstance(decl, Identifier):
-            raise NotAnIdentifierError(str(type(decl)))
+            if not isinstance(decl, Declarator):
+                raise NotAnIdentifierError(str(type(decl)))
         self.initialize()
         self.setNumChildren(1)
         self.setChild(0, decl)
@@ -51,13 +45,6 @@ Identifier type and trail_spec to be ArraySpecifier."""
             if not isinstance(lead_spec, PointerSpecifier):
                 raise UnsupportedLeadSpecifierError(type(lead_spec))
             self._lead_spec = lead_spec
-
-    def getSymbol(self):
-        """Returns the symbol or the identifier 
-associated with this VariableDeclarator.
-The declarator's Identifier type is also refered to as 
-the declarator's symbol, here and elsewhere"""
-        return self.getChild(0)
 
     def __repr__(self):
         """Returns Ansi C string value corresponding to 
@@ -109,6 +96,10 @@ when called by pickle or copy"""
         for k, v in list(statedict.items()):
             setattr(self, k, v)
 
+    def get_symbol(self):
+        ch = self.getChildren()
+        return ch[0].get_symbol()
+
 
 if __name__ == '__main__':
     from hir.Identifier import Identifier
@@ -118,4 +109,5 @@ if __name__ == '__main__':
                               ArraySpecifierTest())))
     print((VariableDeclarator(Identifier('a', None, False),
                               ArraySpecifierTest(),
-                              PointerSpecifier([CONST, RESTRICT, VOLATILE]))))
+                              PointerSpecifier([CONST,
+                                                RESTRICT, VOLATILE]))))

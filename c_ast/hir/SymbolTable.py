@@ -2,17 +2,30 @@
 # TODO: addDeclaration()
 # TODO: addDeclarationBefore()
 # TODO: addDeclarationAfter()
+from hir.Declaration import Declaration
+from hir.Traversable import Traversable
+
+
 class NotADeclarationError(Exception):
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         print(('Invalid type: (%s) to add to symbol table', self.value))
-class SymbolTableException(Exception): pass
-class SymbolNotFound(SymbolTableException): pass
-class DuplicateSymbolInsertionError(SymbolTableException): pass
 
-from hir.Declaration import Declaration
-from hir.Traversable import Traversable
+
+class SymbolTableException(Exception):
+    pass
+
+
+class SymbolNotFound(SymbolTableException):
+    pass
+
+
+class DuplicateSymbolInsertionError(SymbolTableException):
+    pass
+
+
 class SymbolTable(Traversable):
     """Represents a symbol table type in the HIR
 Used by CompoundStatements, Procedures, TranslationUnits (files)
@@ -51,9 +64,9 @@ If this a duplicate, raises DuplicateSymbolInsertionError exception"""
         self._catchNotADeclarationError(decl)
         if str(name) in self.currSyms:
             raise DuplicateSymbolInsertionError(
-                    'Symbol Table has an entry with'
-                    ' same representation:<%s:%s>'
-                    % (str(name), str(self.currSyms[str(name)])))
+                'Symbol Table has an entry with'
+                ' same representation:<%s:%s>'
+                % (str(name), str(self.currSyms[str(name)])))
         self.currSyms[str(name)] = decl
 
     def __repr__(self):
@@ -69,18 +82,19 @@ If this a duplicate, raises DuplicateSymbolInsertionError exception"""
         return dict(items)
 
     def __getstate__(self):
-        """Returns the state, i.e. __slots__.symbolTable to pickle or copy"""        
+        """Returns the state, i.e. __slots__.symbolTable to pickle or copy"""
         return dict(self.items())
 
     def __setstate__(self, statedict):
         """Blindly sets the given statedict into a new object of this class"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
+
 
 if __name__ == '__main__':
     sym = SymbolTable()
     from hir.import_all import *
     sym.addDeclaration('p', VariableDeclaration(specifiers.int16,
-        VariableDeclarator(Identifier('k', None, False))))
+                                                VariableDeclarator(Identifier('k', None, False))))
     sym.addDeclaration('l', VariableDeclaration(specifiers.int16,
-        VariableDeclarator(Identifier('m', None, False))))
+                                                VariableDeclarator(Identifier('m', None, False))))

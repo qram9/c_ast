@@ -2,20 +2,31 @@ from hir.Traversable import Traversable
 import sys
 # TODO: add clone, swapWith like Cetus: For Later
 # TODO: Fix the repr printing
-class ExpressionException(Exception): pass
-class InvalidTypeNeedsParensError(ExpressionException): pass
+
+
+class ExpressionException(Exception):
+    pass
+
+
+class InvalidTypeNeedsParensError(ExpressionException):
+    pass
+
 
 class ChildNotAnExpressionError(ExpressionException):
     """Exception to be raised when an non-Expression type child is specified"""
+
     def __init__(self, value=''):
         self.value = value
+
     def __str__(self):
         return 'Invalid type:(%s) for expression child, must be Expression type' % (self.value)
+
 
 class Expression(Traversable):
     """Represents an abstract base type for all 
 expression types in this HIR"""
     __slots__ = ['_needs_parens']
+
     def __init__(self):
         """Expression type is somewhat of an C++/Java abstract type, 
 __init__ must only be called by a subclass. 
@@ -39,20 +50,20 @@ type Expression"""
 of the expression object (with enclosing () if necessary). 
 Currently the returned string is in AnsiC. 
 Change this function to return different a representation."""
-        retval = '' 
+        retval = ''
 #        retval = 'parent(%s)' % (str(id(self._parent)))
         if self._needs_parens:
             retval += '('
             for k in self.getChildren():
                 retval += repr(k)
 #                if k != self._children[-1]:
-#                    retval += ' '    
+#                    retval += ' '
             retval += ')'
         else:
             for k in self.getChildren():
                 retval += repr(k)
 #                if k != self._children[-1]:
-#                    retval += ' '    
+#                    retval += ' '
         return retval
     __str__ = __repr__
 
@@ -64,7 +75,7 @@ Change this function to return different a representation."""
         """Sets __slots__ entry _needs_parens to true or false. If true, 
 printing will return the contents of the expression enclosed in ()"""
         if not isinstance(f, bool):
-            raise InvalidTypeNeedsParensError( type(f))
+            raise InvalidTypeNeedsParensError(type(f))
         self._needs_parens = f
         return self
 
@@ -74,11 +85,11 @@ Adds __slots__ entry "_needs_parens" to items dict.
 Recurses into base classes and collects items from hir.here too."""
         items = {}
         name = '_needs_parens'
-        items[name] = getattr(self,name)
+        items[name] = getattr(self, name)
         for k in Expression.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -93,8 +104,9 @@ Contents added here is _needs_parens, by calling
     def __setstate__(self, statedict):
         """Blindly calls setattr with entried from hir. 
 __getstate__ like string->attr dict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
+
 
 if __name__ == '__main__':
     exp = Expression()
@@ -106,8 +118,8 @@ if __name__ == '__main__':
     exp.setNumChildren(2)
     chi1 = Expression()
     chi2 = Expression()
-    exp.setChild(0,chi1)
-    exp.setChild(1,chi2)
+    exp.setChild(0, chi1)
+    exp.setChild(1, chi2)
 #    exp.getChild(100)
 #    exp.setChild(1,1)
 #    exp.setChild(100,chi1)

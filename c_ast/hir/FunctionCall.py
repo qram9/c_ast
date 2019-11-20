@@ -1,26 +1,34 @@
 
+from hir.Identifier import Identifier
 from hir.Expression import Expression
+
 
 class InvalidTypeFunctionCallError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __repr__(self):
-        return 'Invalid type: (%s) for function call, expected (%s)' %(value, str(type(Expression)))
+        return 'Invalid type: (%s) for function call, expected (%s)' % (value, str(type(Expression)))
+
 
 class InvalidTypeArgumentListError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __repr__(self):
-        return 'Invalid type: (%s) for Arguments, expected (%s)' %(value, str(type(list)))
+        return 'Invalid type: (%s) for Arguments, expected (%s)' % (value, str(type(list)))
+
 
 class InvalidTypeArgumentError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __repr__(self):
         return 'Invalid type: (%s) for Argument, expected (%s)' % (value, str(type(Expression)))
 
+
 class FunctionCall(Expression):
-    def __init__(self, expr, args = None):
+    def __init__(self, expr, args=None):
         self.initialize()
         if not isinstance(expr, Expression):
             raise InvalidTypeFunctionCallError(str(type(expr)))
@@ -40,18 +48,19 @@ class FunctionCall(Expression):
                     else:
                         self.setChild(r, k)
                         r = r+1
+
     def __repr__(self):
         retval = repr(self.getChild(0)) + '('
         if self.getNumChildren() > 1:
             arglist = []
-            for k in range(1,self.getNumChildren()):
+            for k in range(1, self.getNumChildren()):
                 arglist.append(repr(self.getChild(k)))
             retval += ','.join(arglist)
         retval += ') '
         return retval
     __str__ = __repr__
 
-from hir.Identifier import Identifier
+
 def FunctionCallTest():
     k = FunctionCall(Identifier('fun', None, False))
     print(k)
@@ -60,7 +69,6 @@ def FunctionCallTest():
     k = FunctionCall(Identifier('fun', None, False), args)
     print(k)
 
+
 if __name__ == '__main__':
-    FunctionCallTest() 
-
-
+    FunctionCallTest()

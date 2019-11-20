@@ -1,30 +1,38 @@
 from hir.Specifier import Specifier
 
+
 class ArraySpecifierException(Exception):
     def __init__(self, value):
         self.value = value
 
+
 class InvalidTypeDimensionsError(ArraySpecifierException):
     """Exception, raised when Invalid type (non-list) for dimensions 
 is specified"""
+
     def __repr__(self):
-        return 'Invalid Type: (%s) for Dimensions, expected list' %(value)
+        return 'Invalid Type: (%s) for Dimensions, expected list' % (value)
     __str__ = __repr__
+
 
 class InvalidValueDimensionError(ArraySpecifierException):
     """Exception, raised when the contents of 
 specified dimensions are not integers"""
+
     def __repr__(self):
-        return 'Invalid Value: (%s) for dimension value' %(value)
+        return 'Invalid Value: (%s) for dimension value' % (value)
     __str__ = __repr__
 
-class InvalidIndexDimensionsError(ArraySpecifierException): pass
-        
+
+class InvalidIndexDimensionsError(ArraySpecifierException):
+    pass
+
+
 class ArraySpecifier(Specifier):
     """Represents an Array Specifier part of an array 
 declaration in C. Initialized with a list 
 containing dimensions. for ex: For A[10][20], the
-contents of dimensions will be the list [10,20]""" 
+contents of dimensions will be the list [10,20]"""
     __slots__ = ['dimensions']
 
     def __init__(self, dimensions):
@@ -49,7 +57,7 @@ in the dimensions list specifier"""
             return self.dimensions[n]
         except IndexError:
             raise InvalidIndexDimensionsError(
-                    "%d %d" %(len(self.dimensions), n))
+                "%d %d" % (len(self.dimensions), n))
 
     def setDimension(self, n, val):
         """Sets a specified dimension to given value"""
@@ -76,7 +84,7 @@ a representation."""
         for k in ArraySpecifier.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -86,13 +94,14 @@ a representation."""
 
     def __setstate__(self, statedict):
         """Blindly sets the state of this object, using a statedict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
 
+
 def ArraySpecifierTest():
-    k = ArraySpecifier([1,2,4])
+    k = ArraySpecifier([1, 2, 4])
     return k
+
 
 if __name__ == '__main__':
     ArraySpecifierTest()
-    

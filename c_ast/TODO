@@ -1,21 +1,32 @@
-POINTER
 
-STRUCT
+TEST based on:
+https://en.cppreference.com/w/c/language/declarations
+ArrayDeclarator
+PointerDeclarator
+FunctionDeclarator
+
+TEST STRUCTS, VARS and SYMTABS
+
+TYPES 
 
 INITIALIZER
 
+TYPECAST
+
 IRBUILD
 
-NEED TO RETHINK THE REPR/STR THING
-
-TYPECAST
+NEED TO RETHINK THE REPR/STR THING.
+According to some content on the web,
+repr and str must be different.
 
 STRING
 
-ANNOTATION
+ANNOTATIONS?
 
 PRAGMA
 
 TRANSLATION UNIT
 
 PROGRAM
+
+HOW DO WE PLUG-IN WITH ISL STUFF?
