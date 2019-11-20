@@ -1,5 +1,11 @@
+from hir.BinaryExpression import BinaryExpression
+from hir.AssignmentExpression import AssignmentExpression
+from hir.Operator import binaryOperator
+from hir.Operator import assignmentOperator
+from hir.Identifier import Identifier
 from hir.Statement import Statement
 from hir.Expression import Expression
+
 
 class ExpressionStatement(Statement):
     __slots__ = ('_expr')
@@ -36,7 +42,7 @@ Recurses into base classes and collects items from hir.here too."""
         for k in ExpressionStatement.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
 
@@ -50,25 +56,19 @@ Contents added here is _expr"""
     def __setstate__(self, statedict):
         """Blindly calls setattr with entried from hir. 
 __getstate__ like string->attr dict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
 
-from hir.AssignmentExpression import AssignmentExpression
-from hir.Identifier import Identifier
-from hir.Operator import assignmentOperator
 
 def ExpressionStatementTest():
     return ExpressionStatement(
-            AssignmentExpression(Identifier('a', None, False),
-                assignmentOperator.ADD, Identifier('b', None, False)))
+        AssignmentExpression(Identifier('a', None, False),
+                             assignmentOperator.ADD, Identifier('b', None, False)))
 
-from hir.BinaryExpression import BinaryExpression
-from hir.Operator import binaryOperator
-from hir.Identifier import Identifier
 
 if __name__ == '__main__':
     id1 = Identifier('a', None, False)
     id2 = Identifier('b', None, False)
     binexp = BinaryExpression(id1, binaryOperator.ADD, id2)
     expstmt = ExpressionStatement(binexp)
-    print (expstmt)
+    print(expstmt)

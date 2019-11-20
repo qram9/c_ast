@@ -1,11 +1,12 @@
 """Represents an Ansi C function prototype
 declarator."""
 
-#TODO
+# TODO
 from hir.Declarator import Declarator
 from hir.Declaration import Declaration
 from hir.Identifier import Identifier
 from hir.Specifier import Specifier
+
 
 class NameNotAnIdentifier(Exception):
 
@@ -15,6 +16,7 @@ class NameNotAnIdentifier(Exception):
     def __str__(self):
         return 'Invalid type:(%s), in place of Identifier' % (value)
 
+
 class ParameterNotSupportedError(Exception):
 
     def __init__(self, value=''):
@@ -23,6 +25,7 @@ class ParameterNotSupportedError(Exception):
     def __str__(self):
         return 'Invalid type:(%s), in place of Identifier' % (value)
 
+
 class ProcedureDeclarator(Declarator):
 
     __slots__ = ['lead', 'trail']
@@ -30,8 +33,10 @@ class ProcedureDeclarator(Declarator):
     def __init__(self, name, lead=[], params=[]):
         self.lead = []
         self.trail = []
+
         if not isinstance(name, Identifier):
             raise NameNotAnIdentifier(str(type(name)))
+
         self.initialize()
         self.setNumChildren(1)
         self.setChild(0, name)
@@ -46,9 +51,6 @@ class ProcedureDeclarator(Declarator):
                 self.trail.append(k)
             else:
                 raise ParameterNotSupportedError(str(type(k)))
-
-    def getSymbol(self):
-        return self.getChild(0)
 
     def __repr__(self):
         retval = ''
@@ -68,7 +70,7 @@ class ProcedureDeclarator(Declarator):
         for k in ProcedureDeclarator.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         print('items for ProcedureDeclarator <%s>:' % self, items)
         return dict(items)
@@ -78,8 +80,12 @@ class ProcedureDeclarator(Declarator):
 
     def __setstate__(self, statedict):
         print('New set state for ProcedureDeclarator')
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
+
+    def get_symbol(self):
+        return self.getChildren()[0].get_symbol()
+
 
 if __name__ == '__main__':
     from hir.Identifier import Identifier
@@ -88,12 +94,15 @@ if __name__ == '__main__':
     from hir.VariableDeclarator import VariableDeclarator
     from hir.Declaration import Declaration
     from hir.DeclarationStatement import DeclarationStatement
-    k = ProcedureDeclarator(Identifier('proc_name', None, False),
-                [specifiers.int8], 
+    return get_symbol
+    k = ProcedureDeclarator(
+        Identifier('proc_name', None, False),
+        [specifiers.int8],
         [VariableDeclaration(specifiers.int8,
-                    VariableDeclarator(Identifier('x', None, False))), specifiers.inT])
+                             VariableDeclarator(
+                                 Identifier('x', None, False))), specifiers.inT])
     print(k)
     l = Declaration()
-    l.setChild(0,k)
+    l.setChild(0, k)
     print(l)
     print(DeclarationStatement(l))

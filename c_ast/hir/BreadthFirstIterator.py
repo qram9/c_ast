@@ -1,23 +1,48 @@
-class BreadthFirstIteratorException(Exception): pass
-class NotATraversableError(BreadthFirstIteratorException): pass
 from hir.Traversable import Traversable
-class PruneTypeError(Exception): pass
+from hir.ForLoop import ForLoopTest2, bfs
+from hir.IfStatement import IfStatementTest
+from hir.Declarator import Declarator
+from hir.Keyword import specifiers
+from hir.Statement import Statement
+from hir.Expression import Expression
+from hir.ExpressionStatement import ExpressionStatementTest
+from hir.AssignmentExpression import AssignmentExpression
+from hir.AssignmentExpression import AssignmentExpressionTest
+from hir.BinaryExpression import BinaryExpressionTest
+from hir.UnaryExpression import UnaryExpressionTest
+
+
+class BreadthFirstIteratorException(Exception):
+    pass
+
+
+class NotATraversableError(BreadthFirstIteratorException):
+    pass
+
+
+class PruneTypeError(Exception):
+    pass
+
+
 class BreadthFirstIterator(object):
     """Provides a breadth first iterator for a given HIR 
     object. Use the function "next" for the next 
     child. Also provides a prune feature, using which 
     we can a specific HIR object. """
     __slots__ = ('_prune_set', '_queue')
+
     def __init__(self, t):
         if not isinstance(t, Traversable):
             raise NotATraversableError(type(t))
         self._prune_set = []
         self._queue = []
         self._queue.append(t)
+
     def PruneOn(self, t):
         if not issubclass(t, Traversable):
             raise PruneTypeError(t.__name__)
         self._prune_set.append(t)
+
     def _getChildren(self, node):
         """Returns a list containing all child nodes 
 of a Traversable type node. Returns empty list
@@ -28,6 +53,7 @@ iterative tree visitor functions."""
             return k
         except:
             return []
+
     def __next__(self):
         """Yeilds the next object in a 
         Breadth first Iterator. First object 
@@ -43,7 +69,7 @@ iterative tree visitor functions."""
         while len(self._queue):
             r = self._queue[0]
             if hasattr(self, '_prune_set') \
-and len(self._prune_set):
+                    and len(self._prune_set):
                 for k in self._prune_set:
                     if isinstance(r, k):
                         yield r
@@ -53,26 +79,15 @@ and len(self._prune_set):
             for k in self._getChildren(r):
                 self._queue.append(k)
 
+
 def reindent(s, numSpaces):
     """Useful for pretty printer, appends spaces in front of children nodes
     to visualize the breadth first hierarchy"""
     leading_space = numSpaces * ' '
-    lines = [leading_space + line.strip( )
-              for line in s.splitlines( ) ]
+    lines = [leading_space + line.strip()
+             for line in s.splitlines()]
     return ''.join(lines)
 
-from hir.ForLoop import ForLoopTest2, bfs
-from hir.UnaryExpression import UnaryExpressionTest
-from hir.UnaryExpression import UnaryExpressionTest
-from hir.BinaryExpression import BinaryExpressionTest
-from hir.AssignmentExpression import AssignmentExpressionTest
-from hir.AssignmentExpression import AssignmentExpression
-from hir.ExpressionStatement import ExpressionStatementTest
-from hir.Expression import Expression
-from hir.Statement import Statement
-from hir.Keyword import specifiers
-from hir.Declarator import Declarator
-from hir.IfStatement import IfStatementTest
 
 if __name__ == '__main__':
     #    bfsitr = BreadthFirstIterator(bfstest)
@@ -94,4 +109,4 @@ if __name__ == '__main__':
     #    comp_stmt.addStatement(exp_stmt)
     ifst = IfStatementTest()
     from hir.Digrapher import Digrapher
-    print(Digrapher(ifst, [Expression,Statement,Declarator]))
+    print(Digrapher(ifst, [Expression, Statement, Declarator]))

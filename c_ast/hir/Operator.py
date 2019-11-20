@@ -14,6 +14,7 @@ i.e. Instead of objects, I will use classes
 (which cannot be initialized) to represent 
 Operators in the HIR"""
 
+
 class Operator(object):
     __slots__ = ('to_str',)
 
@@ -25,7 +26,7 @@ class Operator(object):
     __repr__ = __str__
 
     def __eq__(self, other):
-        if isinstance(other, Operator): 
+        if isinstance(other, Operator):
             return self.to_str == other.to_str
         else:
             return False
@@ -36,134 +37,159 @@ class Operator(object):
     def __getstate__(self):
         items = {}
         for name in Operator.__slots__:
-            items[name] = getattr(self,name)
+            items[name] = getattr(self, name)
         return dict(items)
+
     def __setstate__(self, statedict):
-        for k,v in list(statedict.items()):
-            #print 'setting state:', k, v
+        for k, v in list(statedict.items()):
+            # print 'setting state:', k, v
             setattr(self, k, v)
 
-class BinaryOperator(Operator): pass
-class UnaryOperator(Operator): pass
-class AssignmentOperator(Operator): pass
-class ConditionalOperator(Operator): pass
-class AccessOperator(Operator): pass
+
+class BinaryOperator(Operator):
+    pass
+
+
+class UnaryOperator(Operator):
+    pass
+
+
+class AssignmentOperator(Operator):
+    pass
+
+
+class ConditionalOperator(Operator):
+    pass
+
+
+class AccessOperator(Operator):
+    pass
+
 
 class AccessOperators(object):
     __slots__ = ('access_op', 'operators',
-            'DOT', 'ARROW')
+                 'DOT', 'ARROW')
+
     def __init__(self):
         self.access_op = {
-                'DOT' : '.',
-                'ARROW' : '->'
-                }
+            'DOT': '.',
+            'ARROW': '->'
+        }
         self.operators = {}
-        for k,v in list(self.access_op.items()):
+        for k, v in list(self.access_op.items()):
             self.operators[k] = AccessOperator(v)
-            setattr(self,k, self.operators[k])
+            setattr(self, k, self.operators[k])
 
     def getOperatorList(self):
-        return [op for k,op in list(self.operators.items())]
+        return [op for k, op in list(self.operators.items())]
+
 
 class ConditionalOperators(object):
-    __slots__ = ('conditional_op', 'operators', 
-            'COMPARE_EQ', 'COMPARE_GT', 'COMPARE_GE',
-            'COMPARE_LT', 'COMPARE_LE', 'COMPARE_NE')
+    __slots__ = ('conditional_op', 'operators',
+                 'COMPARE_EQ', 'COMPARE_GT', 'COMPARE_GE',
+                 'COMPARE_LT', 'COMPARE_LE', 'COMPARE_NE')
+
     def __init__(self):
         self.conditional_op = {
-            'COMPARE_EQ' : '==',
-            'COMPARE_GT' : '>',
+            'COMPARE_EQ': '==',
+            'COMPARE_GT': '>',
             'COMPARE_GE': '>=',
-            'COMPARE_LT' : '<', 
-            'COMPARE_LE' : '<=', 
-            'COMPARE_NE' : '!=', 
-            }
+            'COMPARE_LT': '<',
+            'COMPARE_LE': '<=',
+            'COMPARE_NE': '!=',
+        }
         self.operators = {}
-        for k,v in list(self.conditional_op.items()):
+        for k, v in list(self.conditional_op.items()):
             self.operators[k] = BinaryOperator(v)
             setattr(self, k, self.operators[k])
 
     def getOperatorList(self):
-        return [op for k,op in list(self.operators.items())]
+        return [op for k, op in list(self.operators.items())]
+
 
 class BinaryOperators(object):
     __slots__ = ('binary_op', 'operators', 'ADD',
-            'BITWISE_AND', 'BITWISE_XOR', 'BITWISE_OR',
-            'DIVIDE', 'LOGICAL_AND', 'LOGICAL_OR',
-            'MODULUS', 'MULTIPLY', 'SHIFT_LEFT', 'SHIFT_RIGHT',
-            'SUBTRACT', 'EQUAL')
+                 'BITWISE_AND', 'BITWISE_XOR', 'BITWISE_OR',
+                 'DIVIDE', 'LOGICAL_AND', 'LOGICAL_OR',
+                 'MODULUS', 'MULTIPLY', 'SHIFT_LEFT', 'SHIFT_RIGHT',
+                 'SUBTRACT', 'EQUAL')
 
     def __init__(self):
         self.binary_op = {
-            'ADD' : '+', 
-            'BITWISE_AND' : '&', 
-            'BITWISE_XOR' : '^',
-            'BITWISE_OR' : '|',
-            'DIVIDE' : '/', 
-            'LOGICAL_AND' : '&&', 
-            'LOGICAL_OR' : '||', 
-            'MODULUS' : '%', 
-            'MULTIPLY' : '*', 
-            'SHIFT_LEFT' : '<<', 
-            'SHIFT_RIGHT' : '>>', 
-            'SUBTRACT' : '-' } 
+            'ADD': '+',
+            'BITWISE_AND': '&',
+            'BITWISE_XOR': '^',
+            'BITWISE_OR': '|',
+            'DIVIDE': '/',
+            'LOGICAL_AND': '&&',
+            'LOGICAL_OR': '||',
+            'MODULUS': '%',
+            'MULTIPLY': '*',
+            'SHIFT_LEFT': '<<',
+            'SHIFT_RIGHT': '>>',
+            'SUBTRACT': '-'}
         self.operators = {}
-        for k,v in list(self.binary_op.items()):
+        for k, v in list(self.binary_op.items()):
             self.operators[k] = BinaryOperator(v)
             setattr(self, k, self.operators[k])
 
     def getOperatorList(self):
-        return [op for k,op in list(self.operators.items())]
+        return [op for k, op in list(self.operators.items())]
+
 
 class UnaryOperators(object):
     __slots__ = ('unary_op', 'operators', 'ADDRESS_OF', 'BITWISE_NOT',
-            'DEREFERENCE', 'LOGICAL_NEGATION', 'MINUS', 'PLUS',
-            'POST_DECREMENT', 'POST_INCREMENT', 'PRE_DECREMENT',
-            'PRE_INCREMENT')
+                 'DEREFERENCE', 'LOGICAL_NEGATION', 'MINUS', 'PLUS',
+                 'POST_DECREMENT', 'POST_INCREMENT', 'PRE_DECREMENT',
+                 'PRE_INCREMENT')
+
     def __init__(self):
         self.unary_op = \
-            {'ADDRESS_OF' : '&',
-            'BITWISE_NOT' : '~',
-            'DEREFERENCE' : '*',
-            'LOGICAL_NEGATION' : '!',
-            'MINUS' : '-',
-            'PLUS' : '+',
-            'POST_DECREMENT' : '--',
-            'PRE_DECREMENT' : '--',
-            'POST_INCREMENT' : '++',
-            'PRE_INCREMENT' : '++'}
+            {'ADDRESS_OF': '&',
+             'BITWISE_NOT': '~',
+             'DEREFERENCE': '*',
+             'LOGICAL_NEGATION': '!',
+             'MINUS': '-',
+             'PLUS': '+',
+             'POST_DECREMENT': '--',
+             'PRE_DECREMENT': '--',
+             'POST_INCREMENT': '++',
+             'PRE_INCREMENT': '++'}
         self.operators = {}
-        for k,v in list(self.unary_op.items()):
+        for k, v in list(self.unary_op.items()):
             self.operators[k] = UnaryOperator(v)
             setattr(self, k, self.operators[k])
 
     def getOperatorList(self):
-        return [op for k,op in list(self.operators.items())]
+        return [op for k, op in list(self.operators.items())]
+
 
 class AssignmentOperators(object):
-    __slots__ = ('assign_op', 'operators', 
-            'ADD', 'BITWISE_AND', 'BITWISE_OR', 'BITWISE_EXCLUSIVE_OR',
-            'DIVIDE', 'EQUAL', 'MODULUS', 'MULTIPLY', 'SHIFT_LEFT',
-            'SHIFT_RIGHT', 'SUBTRACT')
+    __slots__ = ('assign_op', 'operators',
+                 'ADD', 'BITWISE_AND', 'BITWISE_OR', 'BITWISE_EXCLUSIVE_OR',
+                 'DIVIDE', 'EQUAL', 'MODULUS', 'MULTIPLY', 'SHIFT_LEFT',
+                 'SHIFT_RIGHT', 'SUBTRACT')
+
     def __init__(self):
-        self.assign_op = {'ADD' : '+=',
-                'BITWISE_AND' : '&=',
-                'BITWISE_OR' : '|=',
-                'BITWISE_EXCLUSIVE_OR' : '^=',
-                'DIVIDE' : '/=',
-                'EQUAL' : '=', 
-                'MODULUS' : '%=', 
-                'MULTIPLY' : '*=', 
-                'SHIFT_LEFT' : '<<=', 
-                'SHIFT_RIGHT' : '>>=', 
-                'SUBTRACT' : '-=' }
+        self.assign_op = {'ADD': '+=',
+                          'BITWISE_AND': '&=',
+                          'BITWISE_OR': '|=',
+                          'BITWISE_EXCLUSIVE_OR': '^=',
+                          'DIVIDE': '/=',
+                          'EQUAL': '=',
+                          'MODULUS': '%=',
+                          'MULTIPLY': '*=',
+                          'SHIFT_LEFT': '<<=',
+                          'SHIFT_RIGHT': '>>=',
+                          'SUBTRACT': '-='}
         self.operators = {}
-        for k,v in list(self.assign_op.items()):
+        for k, v in list(self.assign_op.items()):
             self.operators[k] = AssignmentOperator(v)
             setattr(self, k, self.operators[k])
 
     def getOperatorList(self):
-        return [op for k,op in list(self.operators.items())]
+        return [op for k, op in list(self.operators.items())]
+
 
 binaryOperator = BinaryOperators()
 unaryOperator = UnaryOperators()
@@ -171,36 +197,46 @@ assignmentOperator = AssignmentOperators()
 conditionalOperator = ConditionalOperators()
 accessOperator = AccessOperators()
 
+
 def getBinaryOperatorList():
     bops = binaryOperator.getOperatorList()
     return bops
+
+
 def getAssignmentOperatorList():
     aops = assignmentOperator.getOperatorList()
     return aops
+
+
 def getUnaryOperatorList():
     uops = unaryOperator.getOperatorList()
     return uops
+
+
 def getConditionalOperatorList():
     cops = conditionalOperator.getOperatorList()
     return cops
+
+
 def getAccessOperatorList():
     aops = accessOperator.getOperatorList()
     return aops
 
+
 if __name__ == '__main__':
-    print ('binary operators')
+    print('binary operators')
     for k in binaryOperator.binary_op:
         print((k, '->', type(getattr(binaryOperator, k))))
         print((k, '->', getattr(binaryOperator, k)))
-    print ('unary operators')
+    print('unary operators')
     for k in unaryOperator.unary_op:
         print((k, '->', type(getattr(unaryOperator, k))))
         print((k, '->', getattr(unaryOperator, k)))
-    print ('assignment operators')
+    print('assignment operators')
     for k in assignmentOperator.assign_op:
         print((k, '->', type(getattr(assignmentOperator, k))))
         print((k, '->', getattr(assignmentOperator, k)))
-    print ('access operators')
+    print('access operators')
     for k in accessOperator.access_op:
         print((k, '->', type(getattr(accessOperator, k))))
         print((k, '->', getattr(accessOperator, k)))

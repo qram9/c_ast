@@ -64,17 +64,22 @@ class Procedure(Declaration):
         procedure name, a ParameterDeclarator and a 
         CompoundStatement Body type. Also initializes 
         a symbol table type."""
+
         self.lead = []
         self.initialize()
         Declaration.__init__(self)
         self.setNumChildren(1)
         self.symbolTable = SymbolTable()
+
         if not isinstance(body, CompoundStatement):
             raise BodyNotCompoundStatementError(type(body))
         self.setChild(0, body)
+
         if not isinstance(iden, Identifier):
             raise ProcedureIDNotIdentifierError(type(iden))
+
         self.proc_id = iden
+
         for k in lead:
             if not isinstance(k, Specifier):
                 raise LeadSpecNotASpecifierError(type(k))
@@ -154,6 +159,9 @@ for pickle and copy"""
         """Blindly sets the contents of statedict to __slots__"""
         for k, v in list(statedict.items()):
             setattr(self, k, v)
+
+    def get_symbol(self):
+        return self.proc_id
 
 
 def procedureTest():

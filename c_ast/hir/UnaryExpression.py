@@ -1,12 +1,19 @@
 from hir.Expression import Expression
 from hir.Operator import unaryOperator, getUnaryOperatorList
 
-class UnaryExpressionException(Exception): pass
-class InvalidUnaryOperatorTypeError(UnaryExpressionException): pass
+
+class UnaryExpressionException(Exception):
+    pass
+
+
+class InvalidUnaryOperatorTypeError(UnaryExpressionException):
+    pass
+
 
 class UnaryExpression(Expression):
     """Subclass of Expression, contains _op to hold unaryOperator"""
     __slots__ = ['_op']
+
     def _catchNotUnaryOperatorError(self, uop):
         """Catches Error when unary expression instantiated 
 with an unknown type for operator. Passed operator 
@@ -16,7 +23,8 @@ if you have made a copy of a Operator type."""
         uops = getUnaryOperatorList()
         if uop not in uops:
             print((uop, type(uop), id(uop)))
-            raise InvalidUnaryOperatorTypeError( type(uop), id(uop))
+            raise InvalidUnaryOperatorTypeError(type(uop), id(uop))
+
     def __init__(self, *args):
         """UnaryExpression initialized with sequence with uop, child"""
         Expression.__init__(self)
@@ -29,6 +37,7 @@ if you have made a copy of a Operator type."""
     def getOperator(self):
         """Returns the Operator __slots__ entry: _op"""
         return self._op
+
     def setOperator(self, uop):
         """Set an Unary Operator as the _op member 
 of the UnaryExpression object"""
@@ -49,19 +58,21 @@ Recurses into base classes and collects items from hir.here too."""
         for k in UnaryExpression.__bases__:
             if hasattr(k, 'items'):
                 supitems = k.items(self)
-                for k,v in list(supitems.items()):
+                for k, v in list(supitems.items()):
                     items[k] = v
         return dict(items)
+
     def __getstate__(self):
         """Returns a dict representing the contents of 
 this Unary Expression object and its base classes 
 instances' contents. Uses the items() function.
 Contents added here is _op"""
         return dict(self.items())
+
     def __setstate__(self, statedict):
         """Blindly calls setattr with entried from hir. 
 __getstate__ like string->attr dict"""
-        for k,v in list(statedict.items()):
+        for k, v in list(statedict.items()):
             setattr(self, k, v)
 
     def __repr__(self):
@@ -72,13 +83,14 @@ and unaryOperator.POST_DECREMENT,
 the rest of the unary operators 
 precede the expression child."""
         if (self._op == unaryOperator.POST_INCREMENT) or (self._op == unaryOperator.POST_DECREMENT):
-            retval = repr(self.getChild(0)) + repr(self._op) 
+            retval = repr(self.getChild(0)) + repr(self._op)
         else:
-            retval = repr(self._op) + repr(self.getChild(0))    
+            retval = repr(self._op) + repr(self.getChild(0))
         if self.getParens():
             retval = '(' + retval + ')'
-        return retval 
+        return retval
     __str__ = __repr__
+
 
 def UnaryExpressionTest():
     from hir.Operator import unaryOperator
@@ -87,9 +99,9 @@ def UnaryExpressionTest():
     b = UnaryExpression(unaryOperator.POST_DECREMENT, a)
     return b
 
+
 if __name__ == '__main__':
     from hir.Identifier import Identifier
     exp = Identifier('a', None, False)
     unary_exp = UnaryExpression(unaryOperator.POST_DECREMENT, exp)
     print((repr(unary_exp)))
-

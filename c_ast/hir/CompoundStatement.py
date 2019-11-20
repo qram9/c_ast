@@ -59,8 +59,7 @@ statements in AnsiC. This class is dumb and does not check these kinds of requir
     def _processDecl(self, stmt):
         """Helper to process declaration statements, called by addStatement, and its variants"""
         for k in stmt.getDeclaration().getDeclaredSymbols():
-            self.symbolTable.addDeclaration(k.getSymbol(),
-                                            stmt.getDeclaration())
+            self.symbolTable.addDeclaration(k, stmt.getDeclaration())
 
     def addStatement(self, stmt):
         """Adds a statement to this compound statement object.
@@ -148,7 +147,7 @@ function to return different a representation."""
     __str__ = __repr__
 
     def items(self):
-        """Returns items dict when called from hir.etstate. 
+        """Returns items dict when called from hir.setstate. 
 Adds __slots__ entry "symbolTable" to items dict.
 Recurses into base classes and collects items from hir.here too."""
         items = {}

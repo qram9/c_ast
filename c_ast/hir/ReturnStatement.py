@@ -1,11 +1,14 @@
 from hir.Expression import Expression
 from hir.Statement import Statement
 
+
 class InvalidReturnTypeError(Exception):
     def __init__(self, value):
         self.value = value
+
     def __repr__(self):
         return 'Invalid Return Type:(%s) for ReturnStatement, expecting Expression' % (value)
+
 
 class ReturnStatement(Statement):
     __slots__ = ()
@@ -27,6 +30,7 @@ class ReturnStatement(Statement):
             retval += repr(self.getChild(0))
             retval += ';'
             return retval
+
 
 if __name__ == '__main__':
     from hir.Identifier import Identifier

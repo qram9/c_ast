@@ -2,6 +2,16 @@ class TraversableException(Exception):
     pass
 
 
+def get_symbols(aobj, retval):
+
+    if hasattr(aobj, 'get_symbol'):
+        retval.append(aobj.get_symbol())
+        return
+
+    for ch in aobj.getChildren():
+        get_symbols(ch, retval)
+
+
 class NumChildrenNotSetError(TraversableException):
     """Raise exception if not 
 'number of children of a traversable node 
@@ -76,6 +86,22 @@ class IndexTypeMustBeIntError(TraversableException):
 
 # class ParentChildNotOKError(TraversableException):
 #    pass
+
+
+class ChildNotCorrectType(Exception):
+    def __init__(self, value=''):
+        self.value = value
+
+    def __str__(self):
+        return 'Child must be of type:(Declarator, Declaration, Statement), refered type:(%s)' % self.value
+
+
+class ParentNotCorrectType(Exception):
+    def __init__(self, value=''):
+        self.value = value
+
+    def __str__(self):
+        return 'Child must be of type:(Declarator, Declaration, Statement), refered type:(%s)' % self.value
 
 
 class Traversable(object):
