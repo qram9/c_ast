@@ -62,9 +62,6 @@ class Bracket_list:
         self.bracket_list.remove(e)
 
     def concat(self, bl2):
-        print("Need to concat:")
-        print("  " + ", ".join([str(brack) for brack in self.bracket_list]))
-        print("  " + ", ".join([str(brack) for brack in bl2.bracket_list]))
         self.bracket_list.extend(bl2.bracket_list)
 
     def __str__(self):
