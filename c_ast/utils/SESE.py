@@ -22,8 +22,7 @@ class Edge:
     ''' To me, implementing edges this way makes sense
  for doing undirected DFS by Johnson et al (regarding
  self.from_n and self.to_n)'''
-    __slots__ = ('edge_class', 'recent_size',
-                 'recent_class', 'ord_pair',
+    __slots__ = ('edge_class', 'recent_size', 'recent_class', 'ord_pair',
                  'from_n', 'to_n')
 
     def __init__(self, from_n, to_n):
@@ -77,7 +76,8 @@ class Graph:
                  'start_time', 'dfs_time', 'pre_number',
                  'dir_adj_list', 'multi_graph_adj_list',
                  'post_order', 'tree_edges', 'back_edges',
-                 'capping_back_edges', 'rev_dfs_num', 'dfs_edges')
+                 'capping_back_edges', 'rev_dfs_num', 'dfs_edges',
+                 'brack_set', 'visited_node')
 
     def __init__(self):
         self.start = 0
@@ -98,6 +98,8 @@ class Graph:
         self.capping_back_edges = dict()
         self.pre_number = 0
         self.dfs_edges = []
+        self.brack_set = dict()
+        self.visited_node = set()
 
     def descendant(self, u, v):
         if (self.start_time[u] < self.start_time[v] and
@@ -171,7 +173,6 @@ class Graph:
         self.dfs_time += 1
         self.pre_number += 1
         self.start_time[anod] = self.dfs_time
-        print("Visit", anod)
         for succ_nod in self.multi_graph_adj_list[anod]:
             if succ_nod not in self.parent:
                 print("New treeedge", anod, succ_nod)
@@ -184,28 +185,43 @@ class Graph:
             else:
                 ''' This stuff of treating a directed graph
 as an undirected version tends to be very rarely seen or
-spoken about. I googled for my part - but...
-In the adj-list repr of undirected, we have
+spoken about. I googled for my part - but was not much lucky...
+Has ended up confusing me quite a lot.
+
+In the adj-list representation for undirected, we have
 edges going from src to dest and from dest to src (with
 dest and src relationship from the directed version).
-Now, that means that the duplicate edges would become back-edges.
-However we need to think of edges as an 'unordered-set of two
-nodes' rather than an 'ordered-pair'.
-That would set the  edge on first-visit to be visited
-and as mark it as a tree-edge. So basically what I did is
-prioritize a tree-edge and not mark an edge as a back-edge if
-it is already a tree-edge. This confuses me a great big deal,
-directed or undirected graphs can have multiple
-incoming back-edges what is called parallel-edges or self-loops
-or a loop with just two nodes. These edges seem to fall out of
-consideration out here with Johnson et al.'''
+Edge counts are double that of the incoming directed version.
+Now, that means that the duplicated tree edges would become back-edges
+during undirected DFS. However, we need to think of edges
+as an 'unordered-set of two nodes' rather than an 'ordered-pair'.
+That would then imply setting the edge on first-visit
+as a tree-edge. It is confusing as to what happens if the order
+of visitation does not start at the root of the incoming CFG.
+So basically all this needs to be unit-tested rigourously.
+
+What I did is prioritize a tree-edge. Basically, not mark an edge as a
+back-edge if it is already a tree-edge.
+
+This further confuses me a great big deal,
+as general directed or undirected graphs can have multiple
+incoming back-edges or what gets called parallel-edges or self-loops.
+Even a loop with just two nodes seems to get lost.
+Imagine a->b and b->a. These are going to look perfect in
+a CFG, no questions asked. Now, how to we differentiate
+this tree-edge a->b and back-edge b->a, as these two edges
+are the same set {a,b}. It would then be argued that a->b and b->a are both
+the same in undirected and trivially cycle-equivalent, just as
+they are in directed... maybe all that is part of the story.
+These edges seem to fall out of consideration
+but manage to stand not. Maybe Johnson et al has
+even more surprises in store.'''
                 dont_add = False
                 for edg in self.tree_edges[succ_nod]:
                     if (edg.to_n == anod or edg.from_n == anod):
                         dont_add = True
                         break
                 if dont_add is True:
-                    print("Existing tree-edge ", anod, succ_nod)
                     continue
 
                 for edg in self.back_edges[succ_nod]:
@@ -213,15 +229,12 @@ consideration out here with Johnson et al.'''
                         dont_add = True
                         break
                 if dont_add is True:
-                    print("Existing back-edge", anod, succ_nod)
                     continue
-                print("New back-edge", anod, succ_nod)
                 edg = Edge(anod, succ_nod)
                 self.back_edges[succ_nod].append(edg)
                 self.back_edges[anod].append(edg)
         self.post_order.append(self.node_dic[anod])
         self.dfs_time += 1
-        print("Finish", anod)
         self.finish_num[anod] = self.dfs_time
 
     def undirected_dfs_starting_at(self, start_node):
@@ -244,8 +257,47 @@ consideration out here with Johnson et al.'''
             num_id = nod.numeric_id
             nod.dfs_num = self.dfs_num[num_id]
 
+    def undirected_edge_dfs(self, curnod):
+        ''' DFS visitor containing the implementation
+of slow cycle equivalence algorithm given in Johnson et al'''
+        self.visited_node.add(curnod)
+        for edg in self.tree_edges[curnod]:
+            succ = edg.to_n if edg.from_n == curnod else edg.from_n
+            if succ not in self.visited_node:
+                self.undirected_edge_dfs(succ)
+        # point of retreat
+
+        self.brack_set[curnod] = set()
+
+        for edg in self.tree_edges[curnod]:
+            if edg.from_n != curnod:
+                continue
+            succ = edg.to_n
+            self.brack_set[curnod] = self.brack_set[curnod].union(
+                                                self.brack_set[succ])
+
+        for back_edg in self.back_edges[curnod]:
+            if back_edg.from_n == curnod:
+                succnod = back_edg.to_n
+            elif back_edg.to_n == curnod:
+                succnod = back_edg.from_n
+            else:
+                succnod = None
+            if self.descendant(succnod, curnod):
+                self.brack_set[curnod].add(back_edg)
+            elif self.ancestor(succnod, curnod):
+                self.brack_set[curnod].remove(back_edg)
+
     def slow_cycle_equiv(self):
-        pass
+        ''' The slow cycle equivalence algorithm discussed in Johnson et al'''
+        self.visited_node.clear()
+        self.undirected_edge_dfs(0)
+        for nod in self.nodes:
+            if nod.numeric_id not in self.visited_node:
+                self.undirected_edge_dfs(nod.numeric_id)
+        for nod_num, brack_set in self.brack_set.items():
+            print("Brackets for:", nod_num,
+                  ', '.join([str(edg) for edg in brack_set]))
 
     def cycle_equiv(self):
         ''' Faithful (claim?) implementation of Johnson et al
@@ -486,6 +538,7 @@ def run_case1():
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
     graph_obj.dot_it('case1')
+    graph_obj.slow_cycle_equiv()
 
 
 def run_case2():
@@ -511,6 +564,7 @@ def run_case2():
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
     graph_obj.dot_it('case2')
+    graph_obj.slow_cycle_equiv()
 
 
 def run_case3():
@@ -536,11 +590,12 @@ def run_case3():
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
     graph_obj.dot_it('case3')
+    graph_obj.slow_cycle_equiv()
 
 
 if __name__ == '__main__':
     # run_simple()
     # run_case0()
-    run_case1()
+    # run_case1()
     # run_case2()
-    # run_case3()
+    run_case3()
