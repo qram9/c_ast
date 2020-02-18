@@ -1,8 +1,9 @@
 from itertools import count
-# import pudb
+import pudb
 
 new_node_class = count().__next__
-new_edge_class = count(-20).__next__
+new_edge_class = count(-100).__next__
+new_region_class = count(-1000).__next__
 
 
 class Node:
@@ -23,23 +24,20 @@ class Edge:
  for doing undirected DFS by Johnson et al (regarding
  self.from_n and self.to_n)'''
     __slots__ = ('edge_class', 'recent_size', 'recent_class', 'ord_pair',
-                 'from_n', 'to_n')
+                 'from_n', 'to_n', 'entry', 'exit')
 
     def __init__(self, from_n, to_n):
         self.edge_class, self.recent_size, self.recent_class = None, 0, 0
         self.ord_pair = (from_n, to_n)
-        sort_from_n = from_n
-        sort_to_n = to_n
-        if sort_from_n > sort_to_n:
-            tmp_n = sort_from_n
-            sort_from_n = sort_to_n
-            sort_to_n = tmp_n
-        self.from_n = sort_from_n
-        self.to_n = sort_to_n
+        self.from_n = from_n
+        self.to_n = to_n
+        self.entry = None
+        self.exit = None
 
     def __str__(self):
         return ("(" + str(self.from_n) + ", " + str(self.to_n) + ")" + ", "
-                + "edge_class: " + str(self.edge_class))
+                + "edge_class: " + str(self.edge_class) + " recent_class: " +
+                str(self.recent_class))
 
 
 class Bracket_list:
@@ -69,6 +67,23 @@ class Bracket_list:
         return ret
 
 
+class Region:
+    __slots__ = ('num_id', 'entry', 'exit')
+
+    def __init__(self):
+        self.entry = None
+        self.exit = None
+        self.num_id = new_region_class()
+
+    def __str__(self):
+        ret = ('ID: ' + str(self.num_id) +\
+               ' Entry:<' + str(self.entry.from_n)
+               + ', ' + str(self.entry.to_n) + '>'
+               + ' Exit:<' + str(self.exit.from_n)
+               + ', ' + str(self.exit.to_n) + '>')
+        return ret
+
+
 class Graph:
     ''' Using the Parent based DFS algo to do undirected graph DFS.'''
     __slots__ = ('start', 'nodes', 'node_dic', 'num_edges',
@@ -77,7 +92,9 @@ class Graph:
                  'dir_adj_list', 'multi_graph_adj_list',
                  'post_order', 'tree_edges', 'back_edges',
                  'capping_back_edges', 'rev_dfs_num', 'dfs_edges',
-                 'brack_set', 'visited_node')
+                 'brack_set', 'visited_node', 'edges', 'last_region',
+                 'edges_by_class', 'first_of_class', 'last_of_class',
+                 'regions')
 
     def __init__(self):
         self.start = 0
@@ -97,9 +114,14 @@ class Graph:
         self.back_edges = dict()
         self.capping_back_edges = dict()
         self.pre_number = 0
-        self.dfs_edges = []
+        self.dfs_edges = list()
         self.brack_set = dict()
         self.visited_node = set()
+        self.edges = list()
+        self.last_region = dict()
+        self.first_of_class = dict()
+        self.last_of_class = dict()
+        self.regions = list()
 
     def descendant(self, u, v):
         if (self.start_time[u] < self.start_time[v] and
@@ -121,6 +143,9 @@ class Graph:
         self.dir_adj_list[anod.numeric_id] = []
         self.multi_graph_adj_list[anod.numeric_id] = []
         self.node_dic[anod.numeric_id] = anod
+        self.back_edges[anod.numeric_id] = list()
+        self.tree_edges[anod.numeric_id] = list()
+        self.capping_back_edges[anod.numeric_id] = list()
 
     def add_nodes_from(self, nodes):
         self.nodes = []
@@ -129,9 +154,6 @@ class Graph:
             anod = Node(k)
             anod.numeric_id = new_node_class()
             self.add_node(anod)
-            self.back_edges[anod.numeric_id] = list()
-            self.tree_edges[anod.numeric_id] = list()
-            self.capping_back_edges[anod.numeric_id] = list()
 
     @staticmethod
     def add_to_adj_list(adj_list, from_a, to_a):
@@ -181,6 +203,7 @@ class Graph:
                 self.tree_edges[anod].append(edg)
                 self.tree_edges[succ_nod].append(edg)
                 self.parent[succ_nod] = anod
+                self.edges.append(edg)
                 self.undirected_dfs_visit(succ_nod)
             else:
                 ''' This stuff of treating a directed graph
@@ -203,8 +226,7 @@ So basically all this needs to be unit-tested rigourously.
 What I did is prioritize a tree-edge. Basically, not mark an edge as a
 back-edge if it is already a tree-edge.
 
-This further confuses me a great big deal,
-as general directed or undirected graphs can have multiple
+Generally directed or undirected graphs can have multiple
 incoming back-edges or what gets called parallel-edges or self-loops.
 Even a loop with just two nodes seems to get lost.
 Imagine a->b and b->a. These are going to look perfect in
@@ -215,7 +237,7 @@ the same in undirected and trivially cycle-equivalent, just as
 they are in directed... maybe all that is part of the story.
 These edges seem to fall out of consideration
 but manage to stand not. Maybe Johnson et al has
-even more surprises in store.'''
+many surprises in store.'''
                 dont_add = False
                 for edg in self.tree_edges[succ_nod]:
                     if (edg.to_n == anod or edg.from_n == anod):
@@ -231,6 +253,9 @@ even more surprises in store.'''
                 if dont_add is True:
                     continue
                 edg = Edge(anod, succ_nod)
+                print("backedge", edg)
+                # pudb.set_trace()
+                self.edges.append(edg)
                 self.back_edges[succ_nod].append(edg)
                 self.back_edges[anod].append(edg)
         self.post_order.append(self.node_dic[anod])
@@ -300,7 +325,7 @@ of slow cycle equivalence algorithm given in Johnson et al'''
                   ', '.join([str(edg) for edg in brack_set]))
 
     def cycle_equiv(self):
-        ''' Faithful (claim?) implementation of Johnson et al
+        ''' Faithful (?) implementation of Johnson et al
 CycleEquiv algo PLDI1994'''
         # The algorithm says "reverse depth-first order"
         # I never heard or that phrase or order being used anywhere
@@ -469,6 +494,39 @@ get their own eq-classes.'''
                                for edg in self.tree_edges[anod.numeric_id]])
                   + "]")
 
+        for edg in self.edges:
+            print("Edge visitor", edg)
+            if edg.edge_class not in self.first_of_class:
+                self.first_of_class[edg.edge_class] = edg
+            self.last_of_class[edg.edge_class] = edg
+
+    def find_regions(self):
+        '''Find regions - walk over edges in dfs order and fill
+in regions for each edge'''
+        for edg in self.edges:
+            edge_class = edg.edge_class
+            print("Visiting edge for regions:", edg)
+            if edge_class in self.last_region:
+                r = self.last_region[edge_class]
+                r.exit = edg
+                edg.exit = r
+                print("Exit for:", r.num_id, edg)
+
+            if (edg != self.last_of_class[edge_class]):
+                r = Region()
+                self.regions.append(r)
+                r.entry = edg
+                edg.entry = r
+                self.last_region[edge_class] = r
+                print("New region for:", edge_class, edg)
+            elif (self.last_of_class[edge_class]
+                  == self.first_of_class[edge_class]):
+                r = Region()
+                self.regions.append(r)
+                r.entry = r.exit = edg
+                edg.entry = edg.exit = edg
+                print("New region with last == first:", edge_class, edg)
+
     def __str__(self):
         def to_str_adj_list(an_adj_list):
             aret = ''
@@ -484,7 +542,25 @@ get their own eq-classes.'''
         dir_ret += to_str_adj_list(self.dir_adj_list)
         mult_ret = '\nVertices, Undirected edges\n'
         mult_ret += to_str_adj_list(self.multi_graph_adj_list)
-        return dir_ret + mult_ret
+        region_str = '\nRegions:\n'
+        for region in self.regions:
+            region_str += str(region) + '\n'
+
+        tree_str = '\n---- TREE EDGES ----\n'
+        for nod, edges in self.tree_edges.items():
+            if len(edges) > 0:
+                tree_str += ('Adj[' + str(nod) + ']')
+                tree_str += ('\n  {' + '; '.join([str(edg) for edg in edges])
+                             + '}\n')
+
+        back_str = '\n---- BACK EDGES ----\n'
+        for nod, edges in self.back_edges.items():
+            if len(edges) > 0:
+                back_str += ('Adj[' + str(nod) + ']')
+                back_str += ('\n  {' + '; '.join([str(edg) for edg in edges])
+                             + '}\n')
+
+        return dir_ret + mult_ret + region_str + tree_str + back_str
 
     def dot_it(self, prefix):
         with open(prefix + '.dot', 'w') as fof:
@@ -497,6 +573,134 @@ get their own eq-classes.'''
             fof.write('}\n')
 
 
+def run_three_nodes():
+    graph_obj = Graph()
+    nodes = [1, 2, 3]
+    graph_obj.add_nodes_from(nodes)
+    graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[0])
+
+    print("three_nodes: start node:", graph_obj.nodes[0].numeric_id)
+    graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
+    graph_obj.fill_dfs_nums()
+    graph_obj.cycle_equiv()
+    graph_obj.find_regions()
+    graph_obj.dot_it('three_nodes')
+    print(graph_obj)
+
+
+def run_tree_loops():
+    graph_obj = Graph()
+    nodes = [1, 2, 3, 4, 5, 6, 7]
+    graph_obj.add_nodes_from(nodes)
+    graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[0])
+
+    print("tree_loops: start node:", graph_obj.nodes[0].numeric_id)
+    graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
+    graph_obj.fill_dfs_nums()
+    graph_obj.cycle_equiv()
+    graph_obj.find_regions()
+    graph_obj.dot_it('tree_loops')
+    print(graph_obj)
+
+
+def run_dense_dag():
+    graph_obj = Graph()
+    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    graph_obj.add_nodes_from(nodes)
+    graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
+
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[7])
+    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[8])
+
+    graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[0])
+
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[7])
+
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[7])
+
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[7])
+
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[7])
+
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[7])
+
+    print("dense_dag: start node:", graph_obj.nodes[0].numeric_id)
+    graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
+    graph_obj.fill_dfs_nums()
+    graph_obj.cycle_equiv()
+    graph_obj.find_regions()
+    graph_obj.dot_it('dense_dag')
+    print(graph_obj)
+
+
+def run_sparse_dag():
+    graph_obj = Graph()
+    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    graph_obj.add_nodes_from(nodes)
+    graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
+
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[7])
+    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[8])
+    graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[9])
+    graph_obj.add_edge(graph_obj.nodes[9], graph_obj.nodes[10])
+
+    graph_obj.add_edge(graph_obj.nodes[10], graph_obj.nodes[0])
+
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[5])
+
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[5])
+
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[8])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[9])
+    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[9])
+
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[5])
+
+    print("sparse_dag: start node:", graph_obj.nodes[0].numeric_id)
+    graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
+    graph_obj.fill_dfs_nums()
+    graph_obj.cycle_equiv()
+    graph_obj.find_regions()
+    graph_obj.dot_it('sparse_dag')
+    print(graph_obj)
+
+
 def run_simple():
     graph_obj = Graph()
     nodes = [1, 2, 3, 4]
@@ -506,12 +710,13 @@ def run_simple():
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[3])
     graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[0])
 
-    print(graph_obj)
     print("simple: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
+    graph_obj.find_regions()
     graph_obj.dot_it('simple')
+    print(graph_obj)
 
 
 def run_case1():
@@ -532,13 +737,14 @@ def run_case1():
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[1])
     graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[2])
 
-    print(graph_obj)
     print("case 1: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
     graph_obj.dot_it('case1')
+    graph_obj.find_regions()
     graph_obj.slow_cycle_equiv()
+    print(graph_obj)
 
 
 def run_case2():
@@ -558,18 +764,19 @@ def run_case2():
     graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[1])
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[3])
 
-    print(graph_obj)
     print("case 2: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
+    graph_obj.find_regions()
     graph_obj.dot_it('case2')
     graph_obj.slow_cycle_equiv()
+    print(graph_obj)
 
 
 def run_case3():
     graph_obj = Graph()
-    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     graph_obj.add_nodes_from(nodes)
     graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
@@ -577,25 +784,59 @@ def run_case3():
     graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[4])
     graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[5])
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
-    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[7])
-    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[8])
-    graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[0])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[7])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[8])
+    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[9])
+    graph_obj.add_edge(graph_obj.nodes[9], graph_obj.nodes[0])
+    graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[3])
     graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[2])
-    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[1])
-    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[3])
 
-    print(graph_obj)
     print("case 3: Start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
     graph_obj.cycle_equiv()
+    graph_obj.find_regions()
     graph_obj.dot_it('case3')
     graph_obj.slow_cycle_equiv()
+    print(graph_obj)
+
+
+def run_dag1():
+    graph_obj = Graph()
+    nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    graph_obj.add_nodes_from(nodes)
+    graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[3])
+    graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[4])
+    graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[7])
+    graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[8])
+    graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[9])
+    graph_obj.add_edge(graph_obj.nodes[9], graph_obj.nodes[0])
+    graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[8])
+    graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[5])
+    graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[4])
+
+    print("dag 1: start node:", graph_obj.nodes[0].numeric_id)
+    graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
+    graph_obj.fill_dfs_nums()
+    graph_obj.cycle_equiv()
+    graph_obj.dot_it('dag1')
+    graph_obj.find_regions()
+    graph_obj.slow_cycle_equiv()
+    print(graph_obj)
 
 
 if __name__ == '__main__':
     # run_simple()
-    # run_case0()
+    # new_node_class = count().__next__
     # run_case1()
+    # new_node_class = count().__next__
     # run_case2()
-    run_case3()
+    # new_node_class = count().__next__
+    # run_case3()
+    new_node_class = count().__next__
+    run_sparse_dag()
