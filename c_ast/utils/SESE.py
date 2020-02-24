@@ -77,10 +77,8 @@ class Region:
 
     def __str__(self):
         ret = ('ID: ' + str(self.num_id) +\
-               ' Entry:<' + str(self.entry.from_n)
-               + ', ' + str(self.entry.to_n) + '>'
-               + ' Exit:<' + str(self.exit.from_n)
-               + ', ' + str(self.exit.to_n) + '>')
+               ' Entry:<' + str(self.entry) + '>'
+               + ' Exit:<' + str(self.exit) + '>')
         return ret
 
 
@@ -94,7 +92,7 @@ class Graph:
                  'capping_back_edges', 'rev_dfs_num', 'dfs_edges',
                  'brack_set', 'visited_node', 'edges', 'last_region',
                  'edges_by_class', 'first_of_class', 'last_of_class',
-                 'regions')
+                 'regions', 'dir_edges')
 
     def __init__(self):
         self.start = 0
@@ -122,6 +120,7 @@ class Graph:
         self.first_of_class = dict()
         self.last_of_class = dict()
         self.regions = list()
+        self.dir_edges = list()
 
     def descendant(self, u, v):
         if (self.start_time[u] < self.start_time[v] and
@@ -173,6 +172,7 @@ class Graph:
     def dfs_visit(self, anod):
         for succ_nod in self.dir_adj_list[anod]:
             if succ_nod not in self.parent:
+                self.dir_edges.append((anod, succ_nod))
                 self.parent[succ_nod] = anod
                 self.dfs_visit(succ_nod)
 
@@ -494,29 +494,47 @@ get their own eq-classes.'''
                                for edg in self.tree_edges[anod.numeric_id]])
                   + "]")
 
-        for edg in self.edges:
-            print("Edge visitor", edg)
-            if edg.edge_class not in self.first_of_class:
-                self.first_of_class[edg.edge_class] = edg
-            self.last_of_class[edg.edge_class] = edg
-
     def find_regions(self):
         '''Find regions - walk over edges in dfs order and fill
-in regions for each edge'''
+in regions for each edge.'''
+        class_for_each_edges = dict()
+
         for edg in self.edges:
             edge_class = edg.edge_class
+            class_for_each_edges[(edg.from_n, edg.to_n)] = edge_class
+            class_for_each_edges[(edg.to_n, edg.from_n)] = edge_class
+        self.dfs_starting_at(self.nodes[0])
+
+        for edg in self.dir_edges:
+            print("Edge visitor", edg)
+            edg_from, edg_to = edg
+            if (edg_from, edg_to) not in class_for_each_edges:
+                edg_class = class_for_each_edges[(edg_to, edg_from)]
+            else:
+                edg_class = class_for_each_edges[(edg_to, edg_from)]
+
+            if edg_class not in self.first_of_class:
+                self.first_of_class[edg_class] = edg
+            self.last_of_class[edg_class] = edg
+
+        for edg in self.dir_edges:
+            edg_from, edg_to = edg
+            if (edg_from, edg_to) not in class_for_each_edges:
+                edge_class = class_for_each_edges[(edg_to, edg_from)]
+            else:
+                edge_class = class_for_each_edges[(edg_to, edg_from)]
+
             print("Visiting edge for regions:", edg)
             if edge_class in self.last_region:
                 r = self.last_region[edge_class]
                 r.exit = edg
-                edg.exit = r
+                # edg.exit = r
                 print("Exit for:", r.num_id, edg)
-
             if (edg != self.last_of_class[edge_class]):
                 r = Region()
                 self.regions.append(r)
                 r.entry = edg
-                edg.entry = r
+                # edg.entry = r
                 self.last_region[edge_class] = r
                 print("New region for:", edge_class, edg)
             elif (self.last_of_class[edge_class]
@@ -524,7 +542,7 @@ in regions for each edge'''
                 r = Region()
                 self.regions.append(r)
                 r.entry = r.exit = edg
-                edg.entry = edg.exit = edg
+                # edg.entry = edg.exit = edg
                 print("New region with last == first:", edge_class, edg)
 
     def __str__(self):
@@ -580,7 +598,6 @@ def run_three_nodes():
     graph_obj.add_edge(graph_obj.nodes[0], graph_obj.nodes[1])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[2])
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[0])
-
     print("three_nodes: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
@@ -606,7 +623,6 @@ def run_tree_loops():
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[1])
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[0])
-
     print("tree_loops: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
@@ -629,29 +645,22 @@ def run_dense_dag():
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[6], graph_obj.nodes[7])
     graph_obj.add_edge(graph_obj.nodes[7], graph_obj.nodes[8])
-
     graph_obj.add_edge(graph_obj.nodes[8], graph_obj.nodes[0])
-
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[3])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[4])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[5])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[1], graph_obj.nodes[7])
-
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[4])
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[5])
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[2], graph_obj.nodes[7])
-
     graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[5])
     graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[3], graph_obj.nodes[7])
-
     graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[6])
     graph_obj.add_edge(graph_obj.nodes[4], graph_obj.nodes[7])
-
     graph_obj.add_edge(graph_obj.nodes[5], graph_obj.nodes[7])
-
     print("dense_dag: start node:", graph_obj.nodes[0].numeric_id)
     graph_obj.undirected_dfs_starting_at(graph_obj.nodes[0])
     graph_obj.fill_dfs_nums()
@@ -831,12 +840,15 @@ def run_dag1():
 
 
 if __name__ == '__main__':
-    # run_simple()
-    # new_node_class = count().__next__
-    # run_case1()
-    # new_node_class = count().__next__
-    # run_case2()
-    # new_node_class = count().__next__
-    # run_case3()
+    new_node_class = count().__next__
+    run_simple()
+    new_node_class = count().__next__
+    run_case1()
+    new_node_class = count().__next__
+    run_case2()
+    new_node_class = count().__next__
+    run_case3()
     new_node_class = count().__next__
     run_sparse_dag()
+    new_node_class = count().__next__
+    run_dag1()
